@@ -8,9 +8,9 @@ import bannerImg from "@/assets/banner-hero.jpg";
 const formatCFA = (n: number) => n.toLocaleString("fr-FR");
 
 const quickActions = [
-  { label: "Recharger", icon: ArrowDownCircle, color: "text-success" },
-  { label: "Retirer", icon: ArrowUpCircle, color: "text-primary" },
-  { label: "Support", icon: Headphones, color: "text-destructive" },
+  { label: "Recharger", icon: ArrowDownCircle, color: "text-success", path: "/recharge" },
+  { label: "Retirer", icon: ArrowUpCircle, color: "text-primary", path: "/retrait" },
+  { label: "Support", icon: Headphones, color: "text-destructive", path: "/support" },
 ];
 
 const Index = () => {
