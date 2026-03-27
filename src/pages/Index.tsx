@@ -1,5 +1,6 @@
 import { Wallet, ArrowDownCircle, ArrowUpCircle, Headphones, Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useProfile } from "@/hooks/useProfile";
 import { useAuth } from "@/hooks/useAuth";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -8,13 +9,14 @@ import bannerImg from "@/assets/banner-hero.jpg";
 const formatCFA = (n: number) => n.toLocaleString("fr-FR");
 
 const quickActions = [
-  { label: "Recharger", icon: ArrowDownCircle, color: "text-success" },
-  { label: "Retirer", icon: ArrowUpCircle, color: "text-primary" },
-  { label: "Support", icon: Headphones, color: "text-destructive" },
+  { label: "Recharger", icon: ArrowDownCircle, color: "text-success", path: "/recharge" },
+  { label: "Retirer", icon: ArrowUpCircle, color: "text-primary", path: "/retrait" },
+  { label: "Support", icon: Headphones, color: "text-destructive", path: "/support" },
 ];
 
 const Index = () => {
   const [showBalance, setShowBalance] = useState(true);
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { data: profile, isLoading } = useProfile();
 
@@ -69,7 +71,7 @@ const Index = () => {
         {quickActions.map((action) => {
           const Icon = action.icon;
           return (
-            <button key={action.label} className="flex flex-col items-center gap-1.5">
+            <button key={action.label} onClick={() => navigate(action.path)} className="flex flex-col items-center gap-1.5">
               <div className="w-12 h-12 rounded-2xl bg-secondary flex items-center justify-center">
                 <Icon className={`w-5 h-5 ${action.color}`} />
               </div>

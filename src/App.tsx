@@ -9,6 +9,9 @@ import Units from "./pages/Units";
 import Team from "./pages/Team";
 import Profile from "./pages/Profile";
 import Auth from "./pages/Auth";
+import RechargePage from "./pages/RechargePage";
+import RetraitPage from "./pages/RetraitPage";
+import SupportPage from "./pages/SupportPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -45,6 +48,9 @@ const App = () => (
               <Route path="/units" element={<Units />} />
               <Route path="/team" element={<Team />} />
               <Route path="/profile" element={<Profile />} />
+              <Route path="/recharge" element={<RechargePage />} />
+              <Route path="/retrait" element={<RetraitPage />} />
+              <Route path="/support" element={<SupportPage />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
