@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      app_settings: {
+        Row: {
+          deposit_moov_number: string | null
+          deposit_mtn_number: string | null
+          deposit_orange_number: string | null
+          id: string
+          min_withdrawal: number
+          support_whatsapp_link: string | null
+          withdrawal_fee_percent: number
+        }
+        Insert: {
+          deposit_moov_number?: string | null
+          deposit_mtn_number?: string | null
+          deposit_orange_number?: string | null
+          id?: string
+          min_withdrawal?: number
+          support_whatsapp_link?: string | null
+          withdrawal_fee_percent?: number
+        }
+        Update: {
+          deposit_moov_number?: string | null
+          deposit_mtn_number?: string | null
+          deposit_orange_number?: string | null
+          id?: string
+          min_withdrawal?: number
+          support_whatsapp_link?: string | null
+          withdrawal_fee_percent?: number
+        }
+        Relationships: []
+      }
       investment_types: {
         Row: {
           created_at: string
@@ -150,36 +180,69 @@ export type Database = {
           },
         ]
       }
+      support_tickets: {
+        Row: {
+          created_at: string
+          id: string
+          message: string
+          status: string
+          subject: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: string
+          status?: string
+          subject: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string
+          status?: string
+          subject?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       transactions: {
         Row: {
           amount: number
           created_at: string
           id: string
+          method: string | null
           proof_url: string | null
           status: Database["public"]["Enums"]["transaction_status"]
           type: Database["public"]["Enums"]["transaction_type"]
           updated_at: string
           user_id: string
+          wallet_number: string | null
         }
         Insert: {
           amount: number
           created_at?: string
           id?: string
+          method?: string | null
           proof_url?: string | null
           status?: Database["public"]["Enums"]["transaction_status"]
           type: Database["public"]["Enums"]["transaction_type"]
           updated_at?: string
           user_id: string
+          wallet_number?: string | null
         }
         Update: {
           amount?: number
           created_at?: string
           id?: string
+          method?: string | null
           proof_url?: string | null
           status?: Database["public"]["Enums"]["transaction_status"]
           type?: Database["public"]["Enums"]["transaction_type"]
           updated_at?: string
           user_id?: string
+          wallet_number?: string | null
         }
         Relationships: []
       }
