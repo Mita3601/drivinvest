@@ -9,6 +9,9 @@ import Units from "./pages/Units";
 import Team from "./pages/Team";
 import Profile from "./pages/Profile";
 import Auth from "./pages/Auth";
+import RechargePage from "./pages/RechargePage";
+import RetraitPage from "./pages/RetraitPage";
+import SupportPage from "./pages/SupportPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
