@@ -1,11 +1,26 @@
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useProfile } from "@/hooks/useProfile";
 import InvestmentCard from "@/components/InvestmentCard";
-import { investmentTypes } from "@/data/investmentTypes";
-import { Wallet } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const formatCFA = (n: number) => n.toLocaleString("fr-FR");
 
 const Units = () => {
-  const balance = 0;
+  const { data: profile } = useProfile();
+  const balance = profile?.balance ?? 0;
+
+  const { data: types, isLoading } = useQuery({
+    queryKey: ["investment_types"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("investment_types")
+        .select("*")
+        .order("price", { ascending: true });
+      if (error) throw error;
+      return data;
+    },
+  });
 
   return (
     <div className="space-y-5 pb-4">
@@ -21,11 +36,15 @@ const Units = () => {
       </div>
 
       <div className="px-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {investmentTypes.map((item, i) => (
-          <div key={item.id} style={{ animationDelay: `${i * 80}ms` }}>
-            <InvestmentCard item={item} />
-          </div>
-        ))}
+        {isLoading
+          ? Array.from({ length: 6 }).map((_, i) => (
+              <Skeleton key={i} className="h-72 rounded-3xl" />
+            ))
+          : types?.map((item, i) => (
+              <div key={item.id} style={{ animationDelay: `${i * 80}ms` }}>
+                <InvestmentCard item={item} />
+              </div>
+            ))}
       </div>
     </div>
   );
