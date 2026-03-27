@@ -14,7 +14,7 @@ const Auth = () => {
   const { signIn, signUp } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const refCode = searchParams.get("ref") || "";
+  const [refCode, setRefCode] = useState(searchParams.get("ref") || "");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
