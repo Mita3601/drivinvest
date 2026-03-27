@@ -71,7 +71,7 @@ const Index = () => {
         {quickActions.map((action) => {
           const Icon = action.icon;
           return (
-            <button key={action.label} className="flex flex-col items-center gap-1.5">
+            <button key={action.label} onClick={() => navigate(action.path)} className="flex flex-col items-center gap-1.5">
               <div className="w-12 h-12 rounded-2xl bg-secondary flex items-center justify-center">
                 <Icon className={`w-5 h-5 ${action.color}`} />
               </div>

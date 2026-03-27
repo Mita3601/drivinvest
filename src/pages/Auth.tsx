@@ -97,14 +97,15 @@ const Auth = () => {
             </div>
           </div>
 
-          {!isLogin && refCode && (
+          {!isLogin && (
             <div>
-              <label className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Code parrain</label>
+              <label className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Code parrain (optionnel)</label>
               <input
                 type="text"
                 value={refCode}
-                readOnly
-                className="w-full mt-1 bg-secondary border border-border rounded-xl px-4 py-3 text-foreground text-sm opacity-60"
+                onChange={(e) => setRefCode(e.target.value)}
+                className="w-full mt-1 bg-secondary border border-border rounded-xl px-4 py-3 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                placeholder="Ex: VA3F8B2C"
               />
             </div>
           )}
