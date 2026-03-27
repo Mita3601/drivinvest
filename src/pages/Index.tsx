@@ -16,6 +16,7 @@ const quickActions = [
 
 const Index = () => {
   const [showBalance, setShowBalance] = useState(true);
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { data: profile, isLoading } = useProfile();
 
