@@ -12,6 +12,15 @@ import Auth from "./pages/Auth";
 import RechargePage from "./pages/RechargePage";
 import RetraitPage from "./pages/RetraitPage";
 import SupportPage from "./pages/SupportPage";
+import AboutPage from "./pages/AboutPage";
+import RulesPage from "./pages/RulesPage";
+import DownloadPage from "./pages/DownloadPage";
+import WithdrawalHistory from "./pages/WithdrawalHistory";
+import AdminLayout from "./pages/admin/AdminLayout";
+import AdminUsers from "./pages/admin/AdminUsers";
+import AdminDeposits from "./pages/admin/AdminDeposits";
+import AdminWithdrawals from "./pages/admin/AdminWithdrawals";
+import AdminProducts from "./pages/admin/AdminProducts";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -51,6 +60,16 @@ const App = () => (
               <Route path="/recharge" element={<RechargePage />} />
               <Route path="/retrait" element={<RetraitPage />} />
               <Route path="/support" element={<SupportPage />} />
+              <Route path="/about" element={<AboutPage />} />
+              <Route path="/rules" element={<RulesPage />} />
+              <Route path="/download" element={<DownloadPage />} />
+              <Route path="/retrait-history" element={<WithdrawalHistory />} />
+            </Route>
+            <Route path="/admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
+              <Route index element={<AdminUsers />} />
+              <Route path="deposits" element={<AdminDeposits />} />
+              <Route path="withdrawals" element={<AdminWithdrawals />} />
+              <Route path="products" element={<AdminProducts />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
