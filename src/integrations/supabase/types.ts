@@ -14,16 +14,192 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      investment_types: {
+        Row: {
+          created_at: string
+          daily_return: number
+          duration: number
+          id: string
+          image_url: string | null
+          name: string
+          price: number
+          stock_limit: number | null
+          tag: string | null
+          total_return: number
+        }
+        Insert: {
+          created_at?: string
+          daily_return: number
+          duration?: number
+          id?: string
+          image_url?: string | null
+          name: string
+          price: number
+          stock_limit?: number | null
+          tag?: string | null
+          total_return: number
+        }
+        Update: {
+          created_at?: string
+          daily_return?: number
+          duration?: number
+          id?: string
+          image_url?: string | null
+          name?: string
+          price?: number
+          stock_limit?: number | null
+          tag?: string | null
+          total_return?: number
+        }
+        Relationships: []
+      }
+      investments: {
+        Row: {
+          amount_invested: number
+          created_at: string
+          daily_yield: number
+          end_date: string
+          id: string
+          last_reward_date: string
+          start_date: string
+          status: Database["public"]["Enums"]["investment_status"]
+          type_id: string
+          user_id: string
+        }
+        Insert: {
+          amount_invested: number
+          created_at?: string
+          daily_yield: number
+          end_date?: string
+          id?: string
+          last_reward_date?: string
+          start_date?: string
+          status?: Database["public"]["Enums"]["investment_status"]
+          type_id: string
+          user_id: string
+        }
+        Update: {
+          amount_invested?: number
+          created_at?: string
+          daily_yield?: number
+          end_date?: string
+          id?: string
+          last_reward_date?: string
+          start_date?: string
+          status?: Database["public"]["Enums"]["investment_status"]
+          type_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "investments_type_id_fkey"
+            columns: ["type_id"]
+            isOneToOne: false
+            referencedRelation: "investment_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          balance: number
+          created_at: string
+          email: string | null
+          full_name: string | null
+          id: string
+          referral_code: string
+          referred_by: string | null
+          total_deposited: number
+          total_withdrawn: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          balance?: number
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          referral_code?: string
+          referred_by?: string | null
+          total_deposited?: number
+          total_withdrawn?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          balance?: number
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          referral_code?: string
+          referred_by?: string | null
+          total_deposited?: number
+          total_withdrawn?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_profiles_referred_by"
+            columns: ["referred_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          proof_url: string | null
+          status: Database["public"]["Enums"]["transaction_status"]
+          type: Database["public"]["Enums"]["transaction_type"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          proof_url?: string | null
+          status?: Database["public"]["Enums"]["transaction_status"]
+          type: Database["public"]["Enums"]["transaction_type"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          proof_url?: string | null
+          status?: Database["public"]["Enums"]["transaction_status"]
+          type?: Database["public"]["Enums"]["transaction_type"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      apply_referral_bonus: {
+        Args: { deposit_amount: number; depositor_user_id: string }
+        Returns: undefined
+      }
+      buy_investment: { Args: { p_type_id: string }; Returns: Json }
+      distribute_daily_rewards: { Args: never; Returns: number }
+      generate_referral_code: { Args: never; Returns: string }
     }
     Enums: {
-      [_ in never]: never
+      investment_status: "active" | "completed"
+      transaction_status: "pending" | "approved" | "rejected"
+      transaction_type: "deposit" | "withdrawal"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +326,10 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      investment_status: ["active", "completed"],
+      transaction_status: ["pending", "approved", "rejected"],
+      transaction_type: ["deposit", "withdrawal"],
+    },
   },
 } as const
