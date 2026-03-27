@@ -214,6 +214,7 @@ export type Database = {
           id: string
           method: string | null
           proof_url: string | null
+          sender_number: string | null
           status: Database["public"]["Enums"]["transaction_status"]
           type: Database["public"]["Enums"]["transaction_type"]
           updated_at: string
@@ -226,6 +227,7 @@ export type Database = {
           id?: string
           method?: string | null
           proof_url?: string | null
+          sender_number?: string | null
           status?: Database["public"]["Enums"]["transaction_status"]
           type: Database["public"]["Enums"]["transaction_type"]
           updated_at?: string
@@ -238,11 +240,30 @@ export type Database = {
           id?: string
           method?: string | null
           proof_url?: string | null
+          sender_number?: string | null
           status?: Database["public"]["Enums"]["transaction_status"]
           type?: Database["public"]["Enums"]["transaction_type"]
           updated_at?: string
           user_id?: string
           wallet_number?: string | null
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
         }
         Relationships: []
       }
@@ -258,8 +279,16 @@ export type Database = {
       buy_investment: { Args: { p_type_id: string }; Returns: Json }
       distribute_daily_rewards: { Args: never; Returns: number }
       generate_referral_code: { Args: never; Returns: string }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
+      app_role: "admin" | "moderator" | "user"
       investment_status: "active" | "completed"
       transaction_status: "pending" | "approved" | "rejected"
       transaction_type: "deposit" | "withdrawal"
@@ -390,6 +419,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      app_role: ["admin", "moderator", "user"],
       investment_status: ["active", "completed"],
       transaction_status: ["pending", "approved", "rejected"],
       transaction_type: ["deposit", "withdrawal"],

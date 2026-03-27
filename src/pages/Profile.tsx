@@ -1,16 +1,21 @@
-import { Wallet, TrendingUp, ArrowDownCircle, Shield, Phone, Globe, Hash, Lock, Copy, LogOut } from "lucide-react";
+import {
+  Wallet, TrendingUp, ArrowDownCircle, Shield, Hash, Globe, Copy, LogOut,
+  User, History, Info, FileText, Headphones, Download, ChevronRight
+} from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { useProfile } from "@/hooks/useProfile";
 import { useAuth } from "@/hooks/useAuth";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import { useAdmin } from "@/hooks/useAdmin";
 
 const formatCFA = (n: number) => n.toLocaleString("fr-FR");
 
 const Profile = () => {
   const { user, signOut } = useAuth();
   const { data: profile, isLoading } = useProfile();
+  const { data: isAdmin } = useAdmin();
   const navigate = useNavigate();
 
   const handleSignOut = async () => {
@@ -45,6 +50,15 @@ const Profile = () => {
   const deposited = profile?.total_deposited ?? 0;
   const withdrawn = profile?.total_withdrawn ?? 0;
   const refCode = profile?.referral_code || "—";
+
+  const menuItems = [
+    { icon: User, label: "Détails du compte", path: "/profile", iconColor: "text-primary", iconBg: "bg-primary/15" },
+    { icon: History, label: "Historique Retraits", path: "/retrait-history", iconColor: "text-accent", iconBg: "bg-accent/15" },
+    { icon: Info, label: "À propos de nous", path: "/about", iconColor: "text-success", iconBg: "bg-success/15" },
+    { icon: FileText, label: "Règlement", path: "/rules", iconColor: "text-muted-foreground", iconBg: "bg-muted" },
+    { icon: Headphones, label: "Service Client", path: "/support", iconColor: "text-destructive", iconBg: "bg-destructive/15" },
+    { icon: Download, label: "Télécharger l'appli", path: "/download", iconColor: "text-primary", iconBg: "bg-primary/15" },
+  ];
 
   return (
     <div className="space-y-4 pb-24">
@@ -82,54 +96,21 @@ const Profile = () => {
         })}
       </div>
 
-      <div className="mx-4 rounded-2xl bg-secondary border border-border p-5">
-        <div className="flex items-center gap-3 mb-3">
-          <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center">
-            <Lock className="w-5 h-5 text-muted-foreground" />
-          </div>
-          <div className="flex-1">
-            <p className="font-display font-bold text-base text-foreground">Espace Promoteur</p>
-            <p className="text-muted-foreground text-[10px] font-semibold tracking-wider uppercase">COMPTE STANDARD</p>
-          </div>
-          <button className="bg-destructive text-destructive-foreground text-xs font-bold px-4 py-2 rounded-xl">
-            ACTIVER
-          </button>
+      {/* Referral code */}
+      <div className="mx-4 rounded-2xl bg-secondary border border-border p-4 flex items-center gap-3">
+        <div className="w-10 h-10 rounded-full bg-primary/15 flex items-center justify-center">
+          <Hash className="w-4 h-4 text-primary" />
         </div>
-        <p className="text-muted-foreground text-xs italic leading-relaxed">
-          Devenez promoteur pour débloquer des commissions bonus et des outils avancés.
-        </p>
+        <div className="flex-1">
+          <p className="text-xs text-muted-foreground">Code Parrainage</p>
+          <p className="font-display font-bold text-foreground">{refCode}</p>
+        </div>
+        <button onClick={() => copyToClipboard(refCode)} className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center">
+          <Copy className="w-3.5 h-3.5 text-muted-foreground" />
+        </button>
       </div>
 
-      <div className="mx-4 rounded-2xl bg-secondary border border-border divide-y divide-border overflow-hidden">
-        {[
-          { icon: Hash, label: "Code Parrainage", value: refCode, copyable: true, iconColor: "text-primary", iconBg: "bg-primary/15" },
-          { icon: Globe, label: "Email", value: user?.email || "—", iconColor: "text-success", iconBg: "bg-success/15" },
-          { icon: Shield, label: "Statut Compte", value: "Vérifié", isStatus: true, iconColor: "text-success", iconBg: "bg-success/15" },
-        ].map((row) => {
-          const Icon = row.icon;
-          return (
-            <div key={row.label} className="flex items-center gap-3 px-4 py-4">
-              <div className={`w-10 h-10 rounded-full ${row.iconBg} flex items-center justify-center`}>
-                <Icon className={`w-4 h-4 ${row.iconColor}`} />
-              </div>
-              <span className="text-sm text-foreground flex-1">{row.label}</span>
-              <div className="flex items-center gap-2">
-                {row.isStatus ? (
-                  <span className="text-success text-sm font-bold border border-success/30 bg-success/10 px-2.5 py-0.5 rounded-md">{row.value}</span>
-                ) : (
-                  <span className="text-foreground text-sm font-semibold">{row.value}</span>
-                )}
-                {row.copyable && (
-                  <button onClick={() => copyToClipboard(row.value)} className="w-7 h-7 rounded-md bg-muted flex items-center justify-center">
-                    <Copy className="w-3.5 h-3.5 text-muted-foreground" />
-                  </button>
-                )}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
+      {/* Auto reinvest */}
       <div className="mx-4 rounded-2xl bg-secondary border border-border p-4 flex items-center gap-3">
         <div className="w-12 h-12 rounded-xl bg-primary/15 flex items-center justify-center">
           <TrendingUp className="w-5 h-5 text-primary" />
@@ -140,6 +121,38 @@ const Profile = () => {
         </div>
         <Switch />
       </div>
+
+      {/* Menu sections */}
+      <div className="mx-4 rounded-2xl bg-secondary border border-border divide-y divide-border overflow-hidden">
+        {menuItems.map((item) => {
+          const Icon = item.icon;
+          return (
+            <button
+              key={item.label}
+              onClick={() => navigate(item.path)}
+              className="flex items-center gap-3 px-4 py-4 w-full text-left hover:bg-muted/50 transition-colors"
+            >
+              <div className={`w-10 h-10 rounded-full ${item.iconBg} flex items-center justify-center`}>
+                <Icon className={`w-4 h-4 ${item.iconColor}`} />
+              </div>
+              <span className="text-sm text-foreground flex-1">{item.label}</span>
+              <ChevronRight className="w-4 h-4 text-muted-foreground" />
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Admin link */}
+      {isAdmin && (
+        <div className="mx-4">
+          <button
+            onClick={() => navigate("/admin")}
+            className="w-full flex items-center justify-center gap-2 bg-primary/10 border border-primary/30 text-primary font-bold py-3 rounded-2xl"
+          >
+            <Shield className="w-4 h-4" /> Dashboard Admin
+          </button>
+        </div>
+      )}
 
       <div className="mx-4">
         <button
