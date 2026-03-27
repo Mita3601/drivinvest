@@ -1,44 +1,71 @@
-import { Wallet, TrendingUp, ArrowDownCircle, Shield, Phone, Globe, Hash, Lock, Copy } from "lucide-react";
+import { Wallet, TrendingUp, ArrowDownCircle, Shield, Phone, Globe, Hash, Lock, Copy, LogOut } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
+import { useProfile } from "@/hooks/useProfile";
+import { useAuth } from "@/hooks/useAuth";
+import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 const formatCFA = (n: number) => n.toLocaleString("fr-FR");
 
 const Profile = () => {
-  const user = {
-    name: "Utilisateur",
-    id: "#001",
-    phone: "70000000",
-    country: "Burkina Faso",
-    verified: true,
-    balance: 500,
-    deposited: 0,
-    withdrawn: 0,
+  const { user, signOut } = useAuth();
+  const { data: profile, isLoading } = useProfile();
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/auth");
   };
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    toast({ title: "Copié !", description: "Copié dans le presse-papier." });
+  };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-4 pb-24 px-4 pt-8">
+        <div className="flex flex-col items-center gap-3">
+          <Skeleton className="w-28 h-28 rounded-3xl" />
+          <Skeleton className="h-6 w-32" />
+          <Skeleton className="h-4 w-48" />
+        </div>
+        <div className="flex gap-3">
+          <Skeleton className="flex-1 h-28 rounded-2xl" />
+          <Skeleton className="flex-1 h-28 rounded-2xl" />
+          <Skeleton className="flex-1 h-28 rounded-2xl" />
+        </div>
+      </div>
+    );
+  }
+
+  const displayName = profile?.full_name || user?.email?.split("@")[0] || "Utilisateur";
+  const balance = profile?.balance ?? 0;
+  const deposited = profile?.total_deposited ?? 0;
+  const withdrawn = profile?.total_withdrawn ?? 0;
+  const refCode = profile?.referral_code || "—";
 
   return (
     <div className="space-y-4 pb-24">
-      {/* Avatar + Verified + Name */}
       <div className="flex flex-col items-center pt-8 pb-2">
         <div className="w-28 h-28 rounded-3xl bg-success flex items-center justify-center mb-3 shadow-lg shadow-success/20">
           <span className="font-display font-extrabold text-5xl text-primary-foreground">
-            {user.name.charAt(0)}
+            {displayName.charAt(0).toUpperCase()}
           </span>
         </div>
-        {user.verified && (
-          <span className="flex items-center gap-1.5 bg-secondary border border-border text-success text-xs font-bold px-3 py-1.5 rounded-full mb-2">
-            <Shield className="w-3.5 h-3.5" /> VÉRIFIÉ
-          </span>
-        )}
-        <h1 className="font-display font-bold text-xl text-foreground">{user.name}</h1>
+        <span className="flex items-center gap-1.5 bg-secondary border border-border text-success text-xs font-bold px-3 py-1.5 rounded-full mb-2">
+          <Shield className="w-3.5 h-3.5" /> VÉRIFIÉ
+        </span>
+        <h1 className="font-display font-bold text-xl text-foreground">{displayName}</h1>
         <p className="text-muted-foreground text-xs mt-0.5">🗓 Membre depuis Récemment</p>
       </div>
 
-      {/* Stats Cards */}
       <div className="flex gap-3 px-4">
         {[
-          { label: "SOLDE", value: formatCFA(user.balance), icon: Wallet, color: "text-primary", bgColor: "bg-primary/15" },
-          { label: "DÉPOSÉ", value: formatCFA(user.deposited), icon: TrendingUp, color: "text-success", bgColor: "bg-success/15" },
-          { label: "RETIRÉ", value: formatCFA(user.withdrawn), icon: ArrowDownCircle, color: "text-destructive", bgColor: "bg-destructive/15" },
+          { label: "SOLDE", value: formatCFA(balance), icon: Wallet, color: "text-primary", bgColor: "bg-primary/15" },
+          { label: "DÉPOSÉ", value: formatCFA(deposited), icon: TrendingUp, color: "text-success", bgColor: "bg-success/15" },
+          { label: "RETIRÉ", value: formatCFA(withdrawn), icon: ArrowDownCircle, color: "text-destructive", bgColor: "bg-destructive/15" },
         ].map((stat) => {
           const Icon = stat.icon;
           return (
@@ -55,7 +82,6 @@ const Profile = () => {
         })}
       </div>
 
-      {/* Espace Promoteur */}
       <div className="mx-4 rounded-2xl bg-secondary border border-border p-5">
         <div className="flex items-center gap-3 mb-3">
           <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center">
@@ -70,17 +96,15 @@ const Profile = () => {
           </button>
         </div>
         <p className="text-muted-foreground text-xs italic leading-relaxed">
-          Devenez promoteur pour débloquer des commissions bonus et des outils avancés. Contactez le support Telegram.
+          Devenez promoteur pour débloquer des commissions bonus et des outils avancés.
         </p>
       </div>
 
-      {/* User Info */}
       <div className="mx-4 rounded-2xl bg-secondary border border-border divide-y divide-border overflow-hidden">
         {[
-          { icon: Hash, label: "ID Utilisateur", value: user.id, copyable: true, iconColor: "text-primary", iconBg: "bg-primary/15" },
-          { icon: Globe, label: "Pays", value: `🇧🇫 ${user.country}`, iconColor: "text-success", iconBg: "bg-success/15" },
-          { icon: Phone, label: "Téléphone", value: user.phone, iconColor: "text-primary", iconBg: "bg-primary/15" },
-          { icon: Shield, label: "Statut Compte", value: user.verified ? "Vérifié" : "Non vérifié", isStatus: true, iconColor: "text-success", iconBg: "bg-success/15" },
+          { icon: Hash, label: "Code Parrainage", value: refCode, copyable: true, iconColor: "text-primary", iconBg: "bg-primary/15" },
+          { icon: Globe, label: "Email", value: user?.email || "—", iconColor: "text-success", iconBg: "bg-success/15" },
+          { icon: Shield, label: "Statut Compte", value: "Vérifié", isStatus: true, iconColor: "text-success", iconBg: "bg-success/15" },
         ].map((row) => {
           const Icon = row.icon;
           return (
@@ -96,7 +120,7 @@ const Profile = () => {
                   <span className="text-foreground text-sm font-semibold">{row.value}</span>
                 )}
                 {row.copyable && (
-                  <button className="w-7 h-7 rounded-md bg-muted flex items-center justify-center">
+                  <button onClick={() => copyToClipboard(row.value)} className="w-7 h-7 rounded-md bg-muted flex items-center justify-center">
                     <Copy className="w-3.5 h-3.5 text-muted-foreground" />
                   </button>
                 )}
@@ -106,7 +130,6 @@ const Profile = () => {
         })}
       </div>
 
-      {/* Auto Reinvest */}
       <div className="mx-4 rounded-2xl bg-secondary border border-border p-4 flex items-center gap-3">
         <div className="w-12 h-12 rounded-xl bg-primary/15 flex items-center justify-center">
           <TrendingUp className="w-5 h-5 text-primary" />
@@ -116,6 +139,15 @@ const Profile = () => {
           <p className="text-muted-foreground text-xs">Réinvestit vos profits automatiquement</p>
         </div>
         <Switch />
+      </div>
+
+      <div className="mx-4">
+        <button
+          onClick={handleSignOut}
+          className="w-full flex items-center justify-center gap-2 bg-destructive/10 border border-destructive/30 text-destructive font-bold py-3 rounded-2xl"
+        >
+          <LogOut className="w-4 h-4" /> Se déconnecter
+        </button>
       </div>
     </div>
   );

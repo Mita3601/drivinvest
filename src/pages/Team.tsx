@@ -1,7 +1,8 @@
 import { Copy, Share2, Users, Gift } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-
-const referralLink = "https://vogueasset.com/register?ref=USER01";
+import { useProfile } from "@/hooks/useProfile";
+import { useAuth } from "@/hooks/useAuth";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const levels = [
   { level: 1, percent: "10%", earned: 0, color: "text-success" },
@@ -10,6 +11,10 @@ const levels = [
 ];
 
 const Team = () => {
+  const { data: profile, isLoading } = useProfile();
+  const refCode = profile?.referral_code || "";
+  const referralLink = `${window.location.origin}/auth?ref=${refCode}`;
+
   const copyLink = () => {
     navigator.clipboard.writeText(referralLink);
     toast({ title: "Lien copié !", description: "Partagez-le pour gagner des commissions." });
@@ -22,7 +27,6 @@ const Team = () => {
         <p className="text-muted-foreground text-sm">Gagnez des commissions sur 3 niveaux</p>
       </div>
 
-      {/* Referral Link */}
       <div className="mx-4 rounded-3xl bg-secondary p-5 card-glow border-gold-gradient space-y-3">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
@@ -34,14 +38,17 @@ const Team = () => {
           </div>
         </div>
         <div className="flex items-center gap-2 bg-navy-deep rounded-xl p-3">
-          <span className="text-xs text-muted-foreground truncate flex-1">{referralLink}</span>
+          {isLoading ? (
+            <Skeleton className="h-4 flex-1" />
+          ) : (
+            <span className="text-xs text-muted-foreground truncate flex-1">{referralLink}</span>
+          )}
           <button onClick={copyLink} className="text-primary">
             <Copy className="w-4 h-4" />
           </button>
         </div>
       </div>
 
-      {/* Levels */}
       <div className="flex gap-3 px-4">
         {levels.map((l) => (
           <div key={l.level} className="flex-1 rounded-2xl bg-secondary p-3 text-center border border-border">
@@ -52,7 +59,6 @@ const Team = () => {
         ))}
       </div>
 
-      {/* Stats */}
       <div className="flex gap-3 px-4">
         <div className="flex-1 rounded-2xl bg-secondary p-4">
           <Users className="w-5 h-5 text-primary mb-2" />
