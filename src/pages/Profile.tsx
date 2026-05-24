@@ -1,14 +1,13 @@
 import {
-  Wallet, TrendingUp, ArrowDownCircle, Shield, Hash, Globe, Copy, LogOut,
-  User, History, Info, FileText, Headphones, Download, ChevronRight
+  ArrowDownCircle, ArrowUpCircle, History, Info, FileText,
+  Headphones, Download, CreditCard, Lock, Gift,
 } from "lucide-react";
-import { Switch } from "@/components/ui/switch";
 import { useProfile } from "@/hooks/useProfile";
 import { useAuth } from "@/hooks/useAuth";
 import { Skeleton } from "@/components/ui/skeleton";
-import { toast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { useAdmin } from "@/hooks/useAdmin";
+import carHero from "@/assets/car-vip2.jpg";
 
 const formatCFA = (n: number) => n.toLocaleString("fr-FR");
 
@@ -18,148 +17,115 @@ const Profile = () => {
   const { data: isAdmin } = useAdmin();
   const navigate = useNavigate();
 
-  const handleSignOut = async () => {
-    await signOut();
-    navigate("/auth");
-  };
-
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    toast({ title: "Copié !", description: "Copié dans le presse-papier." });
-  };
-
-  if (isLoading) {
-    return (
-      <div className="space-y-4 pb-24 px-4 pt-8">
-        <div className="flex flex-col items-center gap-3">
-          <Skeleton className="w-28 h-28 rounded-3xl" />
-          <Skeleton className="h-6 w-32" />
-          <Skeleton className="h-4 w-48" />
-        </div>
-        <div className="flex gap-3">
-          <Skeleton className="flex-1 h-28 rounded-2xl" />
-          <Skeleton className="flex-1 h-28 rounded-2xl" />
-          <Skeleton className="flex-1 h-28 rounded-2xl" />
-        </div>
-      </div>
-    );
-  }
-
   const displayName = profile?.full_name || user?.email?.split("@")[0] || "Utilisateur";
   const balance = profile?.balance ?? 0;
-  const deposited = profile?.total_deposited ?? 0;
-  const withdrawn = profile?.total_withdrawn ?? 0;
-  const refCode = profile?.referral_code || "—";
+  const earnings = profile?.total_deposited ?? 0;
 
-  const menuItems = [
-    { icon: User, label: "Détails du compte", path: "/profile", iconColor: "text-primary", iconBg: "bg-primary/15" },
-    { icon: History, label: "Historique Retraits", path: "/retrait-history", iconColor: "text-accent", iconBg: "bg-accent/15" },
-    { icon: Info, label: "À propos de nous", path: "/about", iconColor: "text-success", iconBg: "bg-success/15" },
-    { icon: FileText, label: "Règlement", path: "/rules", iconColor: "text-muted-foreground", iconBg: "bg-muted" },
-    { icon: Headphones, label: "Service Client", path: "/support", iconColor: "text-destructive", iconBg: "bg-destructive/15" },
-    { icon: Download, label: "Télécharger l'appli", path: "/download", iconColor: "text-primary", iconBg: "bg-primary/15" },
+  const topActions = [
+    { label: "Recharger", icon: ArrowDownCircle, path: "/recharge" },
+    { label: "Retirer", icon: ArrowUpCircle, path: "/retrait" },
+    { label: "Historique", icon: History, path: "/retrait-history" },
+  ];
+
+  const shortcuts = [
+    { label: "À propos", icon: Info, path: "/about" },
+    { label: "Réglementation", icon: FileText, path: "/rules" },
+    { label: "Historique", icon: History, path: "/retrait-history" },
+    { label: "Service client", icon: Headphones, path: "/support" },
+    { label: "Télécharger l'app", icon: Download, path: "/download" },
+    { label: "Lier une carte bancaire", icon: CreditCard, path: "/retrait" },
+    { label: "Changer le mot de passe", icon: Lock, path: "/about" },
+    { label: "GIFT", icon: Gift, path: "/bonus" },
   ];
 
   return (
-    <div className="space-y-4 pb-24">
-      <div className="flex flex-col items-center pt-8 pb-2">
-        <div className="w-28 h-28 rounded-3xl bg-success flex items-center justify-center mb-3 shadow-lg shadow-success/20">
-          <span className="font-display font-extrabold text-5xl text-primary-foreground">
-            {displayName.charAt(0).toUpperCase()}
-          </span>
+    <div className="pb-24">
+      {/* Hero with car background */}
+      <div className="relative h-64">
+        <img src={carHero} alt="" className="absolute inset-0 w-full h-full object-cover" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/60 to-background" />
+        <div className="relative z-10 px-5 pt-6 flex justify-between items-start">
+          <div>
+            <h1 className="font-display font-extrabold text-foreground text-4xl">Bonjour,</h1>
+            {isLoading ? (
+              <Skeleton className="h-6 w-40 mt-2" />
+            ) : (
+              <p className="text-muted-foreground text-xl mt-1">{displayName}</p>
+            )}
+            <span className="inline-block mt-3 px-3 py-1 border border-border rounded-md text-foreground text-sm font-display">LV0</span>
+          </div>
+          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-rose-300 via-orange-200 to-amber-200 flex items-center justify-center shadow-lg shadow-amber-500/20">
+            <svg viewBox="0 0 24 24" className="w-9 h-9 text-background" fill="currentColor">
+              <path d="M3 14 L12 6 L21 14 L17 14 L12 10 L7 14 Z M5 17 L9 17 L9 19 L5 19 Z M15 17 L19 17 L19 19 L15 19 Z" />
+            </svg>
+          </div>
         </div>
-        <span className="flex items-center gap-1.5 bg-secondary border border-border text-success text-xs font-bold px-3 py-1.5 rounded-full mb-2">
-          <Shield className="w-3.5 h-3.5" /> VÉRIFIÉ
-        </span>
-        <h1 className="font-display font-bold text-xl text-foreground">{displayName}</h1>
-        <p className="text-muted-foreground text-xs mt-0.5">🗓 Membre depuis Récemment</p>
       </div>
 
-      <div className="flex gap-3 px-4">
-        {[
-          { label: "SOLDE", value: formatCFA(balance), icon: Wallet, color: "text-primary", bgColor: "bg-primary/15" },
-          { label: "DÉPOSÉ", value: formatCFA(deposited), icon: TrendingUp, color: "text-success", bgColor: "bg-success/15" },
-          { label: "RETIRÉ", value: formatCFA(withdrawn), icon: ArrowDownCircle, color: "text-destructive", bgColor: "bg-destructive/15" },
-        ].map((stat) => {
-          const Icon = stat.icon;
+      {/* Top actions */}
+      <div className="grid grid-cols-3 gap-2 px-4 -mt-6 relative z-10">
+        {topActions.map((a) => {
+          const Icon = a.icon;
           return (
-            <div key={stat.label} className="flex-1 rounded-2xl bg-secondary border border-border p-4 flex flex-col items-center gap-2">
-              <div className={`w-12 h-12 rounded-xl ${stat.bgColor} flex items-center justify-center`}>
-                <Icon className={`w-6 h-6 ${stat.color}`} />
-              </div>
-              <span className="text-[10px] text-muted-foreground font-semibold tracking-wider uppercase">{stat.label}</span>
-              <p className="font-display font-bold text-foreground text-base">
-                {stat.value} <span className="text-xs text-muted-foreground">F</span>
-              </p>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Referral code */}
-      <div className="mx-4 rounded-2xl bg-secondary border border-border p-4 flex items-center gap-3">
-        <div className="w-10 h-10 rounded-full bg-primary/15 flex items-center justify-center">
-          <Hash className="w-4 h-4 text-primary" />
-        </div>
-        <div className="flex-1">
-          <p className="text-xs text-muted-foreground">Code Parrainage</p>
-          <p className="font-display font-bold text-foreground">{refCode}</p>
-        </div>
-        <button onClick={() => copyToClipboard(refCode)} className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center">
-          <Copy className="w-3.5 h-3.5 text-muted-foreground" />
-        </button>
-      </div>
-
-      {/* Auto reinvest */}
-      <div className="mx-4 rounded-2xl bg-secondary border border-border p-4 flex items-center gap-3">
-        <div className="w-12 h-12 rounded-xl bg-primary/15 flex items-center justify-center">
-          <TrendingUp className="w-5 h-5 text-primary" />
-        </div>
-        <div className="flex-1">
-          <p className="font-display font-bold text-sm text-foreground">Réinvestissement Auto</p>
-          <p className="text-muted-foreground text-xs">Réinvestit vos profits automatiquement</p>
-        </div>
-        <Switch />
-      </div>
-
-      {/* Menu sections */}
-      <div className="mx-4 rounded-2xl bg-secondary border border-border divide-y divide-border overflow-hidden">
-        {menuItems.map((item) => {
-          const Icon = item.icon;
-          return (
-            <button
-              key={item.label}
-              onClick={() => navigate(item.path)}
-              className="flex items-center gap-3 px-4 py-4 w-full text-left hover:bg-muted/50 transition-colors"
-            >
-              <div className={`w-10 h-10 rounded-full ${item.iconBg} flex items-center justify-center`}>
-                <Icon className={`w-4 h-4 ${item.iconColor}`} />
-              </div>
-              <span className="text-sm text-foreground flex-1">{item.label}</span>
-              <ChevronRight className="w-4 h-4 text-muted-foreground" />
+            <button key={a.label} onClick={() => navigate(a.path)} className="flex flex-col items-center gap-2 py-3">
+              <Icon className="w-9 h-9 text-foreground" strokeWidth={1.4} />
+              <span className="text-sm text-foreground">{a.label}</span>
             </button>
           );
         })}
       </div>
 
-      {/* Admin link */}
+      {/* Balance cards */}
+      <div className="grid grid-cols-2 gap-3 px-4 mt-4">
+        {[
+          { label: "Solde", value: balance },
+          { label: "Revenus cumulés", value: earnings },
+        ].map((c) => (
+          <div key={c.label} className="rounded-2xl bg-navy-deep border-gold-gradient p-5">
+            {isLoading ? (
+              <Skeleton className="h-7 w-24 mb-2" />
+            ) : (
+              <p className="font-display font-bold text-foreground text-2xl leading-tight">CFA {formatCFA(c.value)}</p>
+            )}
+            <p className="text-muted-foreground text-sm mt-1">{c.label}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Shortcuts grid */}
+      <div className="grid grid-cols-4 gap-y-6 gap-x-2 px-4 mt-6">
+        {shortcuts.map((s) => {
+          const Icon = s.icon;
+          return (
+            <button
+              key={s.label}
+              onClick={() => navigate(s.path)}
+              className="flex flex-col items-center gap-2 text-center"
+            >
+              <Icon className="w-8 h-8 text-foreground" strokeWidth={1.4} />
+              <span className="text-[11px] text-foreground leading-tight">{s.label}</span>
+            </button>
+          );
+        })}
+      </div>
+
       {isAdmin && (
-        <div className="mx-4">
+        <div className="px-4 mt-6">
           <button
             onClick={() => navigate("/admin")}
-            className="w-full flex items-center justify-center gap-2 bg-primary/10 border border-primary/30 text-primary font-bold py-3 rounded-2xl"
+            className="w-full bg-primary/10 border border-primary/30 text-primary font-bold py-3 rounded-2xl"
           >
-            <Shield className="w-4 h-4" /> Dashboard Admin
+            Dashboard Admin
           </button>
         </div>
       )}
 
-      <div className="mx-4">
+      <div className="px-4 mt-6">
         <button
-          onClick={handleSignOut}
-          className="w-full flex items-center justify-center gap-2 bg-destructive/10 border border-destructive/30 text-destructive font-bold py-3 rounded-2xl"
+          onClick={async () => { await signOut(); navigate("/auth"); }}
+          className="w-full bg-destructive/10 border border-destructive/30 text-destructive font-bold py-3 rounded-2xl"
         >
-          <LogOut className="w-4 h-4" /> Se déconnecter
+          Se déconnecter
         </button>
       </div>
     </div>
