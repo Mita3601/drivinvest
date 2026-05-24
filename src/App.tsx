@@ -16,6 +16,8 @@ import AboutPage from "./pages/AboutPage";
 import RulesPage from "./pages/RulesPage";
 import DownloadPage from "./pages/DownloadPage";
 import WithdrawalHistory from "./pages/WithdrawalHistory";
+import BonusQuotidien from "./pages/BonusQuotidien";
+import CentreMissions from "./pages/CentreMissions";
 import AdminLayout from "./pages/admin/AdminLayout";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminDeposits from "./pages/admin/AdminDeposits";
@@ -64,6 +66,8 @@ const App = () => (
               <Route path="/rules" element={<RulesPage />} />
               <Route path="/download" element={<DownloadPage />} />
               <Route path="/retrait-history" element={<WithdrawalHistory />} />
+              <Route path="/bonus" element={<BonusQuotidien />} />
+              <Route path="/missions" element={<CentreMissions />} />
             </Route>
             <Route path="/admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
               <Route index element={<AdminUsers />} />

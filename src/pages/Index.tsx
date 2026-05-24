@@ -53,12 +53,12 @@ const Index = () => {
           </div>
         </div>
         <div className="grid grid-cols-2 gap-3">
-          <button onClick={() => navigate("/team")} className="relative rounded-2xl overflow-hidden h-24 group">
+          <button onClick={() => navigate("/bonus")} className="relative rounded-2xl overflow-hidden h-24 group">
             <img src={bonusImg} alt="Bonus quotidien" className="absolute inset-0 w-full h-full object-cover" loading="lazy" width={1024} height={1024} />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
             <span className="absolute bottom-2 left-3 font-display font-bold text-foreground text-sm">Bonus quotidien ›</span>
           </button>
-          <button onClick={() => navigate("/team")} className="relative rounded-2xl overflow-hidden h-24 group">
+          <button onClick={() => navigate("/missions")} className="relative rounded-2xl overflow-hidden h-24 group">
             <img src={missionsImg} alt="Centre de missions" className="absolute inset-0 w-full h-full object-cover" loading="lazy" width={1024} height={1024} />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
             <span className="absolute bottom-2 left-3 font-display font-bold text-foreground text-sm">Centre de missions ›</span>
