@@ -1,97 +1,117 @@
-import { Wallet, ArrowDownCircle, ArrowUpCircle, Headphones, Eye, EyeOff } from "lucide-react";
-import { useState } from "react";
+import { ArrowDownCircle, ArrowUpCircle, Gift, HelpCircle, Bell } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useProfile } from "@/hooks/useProfile";
-import { useAuth } from "@/hooks/useAuth";
 import { Skeleton } from "@/components/ui/skeleton";
-import bannerImg from "@/assets/banner-hero.jpg";
+import bannerImg from "@/assets/car-banner.jpg";
+import bonusImg from "@/assets/car-vip6.jpg";
+import missionsImg from "@/assets/car-vip5.jpg";
+import newModelImg from "@/assets/car-vip4.jpg";
 
 const formatCFA = (n: number) => n.toLocaleString("fr-FR");
 
-const quickActions = [
-  { label: "Recharger", icon: ArrowDownCircle, color: "text-success", path: "/recharge" },
-  { label: "Retirer", icon: ArrowUpCircle, color: "text-primary", path: "/retrait" },
-  { label: "Support", icon: Headphones, color: "text-destructive", path: "/support" },
-];
-
 const Index = () => {
-  const [showBalance, setShowBalance] = useState(true);
   const navigate = useNavigate();
-  const { user } = useAuth();
   const { data: profile, isLoading } = useProfile();
 
   const balance = profile?.balance ?? 0;
-  const totalDeposited = profile?.total_deposited ?? 0;
-  const totalWithdrawn = profile?.total_withdrawn ?? 0;
-  const displayName = profile?.full_name || user?.email?.split("@")[0] || "Utilisateur";
+  const earnings = profile?.total_deposited ?? 0;
+
+  const quickActions = [
+    { label: "Dépôt", icon: ArrowDownCircle, path: "/recharge" },
+    { label: "Retrait", icon: ArrowUpCircle, path: "/retrait" },
+    { label: "Cadeau", icon: Gift, path: "/team" },
+    { label: "Aide", icon: HelpCircle, path: "/support" },
+  ];
 
   return (
-    <div className="space-y-6 pb-4">
-      <div className="px-4 pt-4">
-        <h1 className="font-display font-bold text-xl text-foreground">Bonjour, {displayName}</h1>
-        <p className="text-muted-foreground text-sm">Prêt pour vos investissements ?</p>
+    <div className="space-y-5 pb-4">
+      {/* Hero banner with logo */}
+      <div className="relative -mt-px">
+        <img src={bannerImg} alt="NIO Asset" className="w-full h-44 object-cover" width={1600} height={640} />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background" />
       </div>
 
-      <div className="mx-4 rounded-3xl bg-secondary p-5 card-glow border-gold-gradient">
-        <div className="flex items-center justify-between mb-1">
-          <span className="text-muted-foreground text-xs uppercase tracking-wider font-medium">Solde disponible</span>
-          <button onClick={() => setShowBalance(!showBalance)} className="text-muted-foreground">
-            {showBalance ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+      {/* Mon compte block */}
+      <div className="mx-4 rounded-3xl bg-secondary p-4 border-gold-gradient card-glow -mt-16 relative">
+        <h2 className="text-center font-display font-bold text-foreground text-lg mb-4">Mon compte</h2>
+        <div className="grid grid-cols-2 gap-3 mb-3">
+          <div className="rounded-2xl bg-navy-deep border-gold-gradient p-4">
+            {isLoading ? (
+              <Skeleton className="h-7 w-24 mb-1" />
+            ) : (
+              <p className="font-display font-bold text-foreground text-xl leading-tight">CFA {formatCFA(balance)}</p>
+            )}
+            <span className="text-muted-foreground text-xs">Solde</span>
+          </div>
+          <div className="rounded-2xl bg-navy-deep border-gold-gradient p-4">
+            {isLoading ? (
+              <Skeleton className="h-7 w-24 mb-1" />
+            ) : (
+              <p className="font-display font-bold text-foreground text-xl leading-tight">CFA {formatCFA(earnings)}</p>
+            )}
+            <span className="text-muted-foreground text-xs">Revenus cumulés</span>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <button onClick={() => navigate("/team")} className="relative rounded-2xl overflow-hidden h-24 group">
+            <img src={bonusImg} alt="Bonus quotidien" className="absolute inset-0 w-full h-full object-cover" loading="lazy" width={1024} height={1024} />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+            <span className="absolute bottom-2 left-3 font-display font-bold text-foreground text-sm">Bonus quotidien ›</span>
+          </button>
+          <button onClick={() => navigate("/team")} className="relative rounded-2xl overflow-hidden h-24 group">
+            <img src={missionsImg} alt="Centre de missions" className="absolute inset-0 w-full h-full object-cover" loading="lazy" width={1024} height={1024} />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+            <span className="absolute bottom-2 left-3 font-display font-bold text-foreground text-sm">Centre de missions ›</span>
           </button>
         </div>
-        <div className="flex items-baseline gap-2">
-          {isLoading ? (
-            <Skeleton className="h-9 w-40" />
-          ) : (
-            <span className="font-display font-extrabold text-3xl text-foreground">
-              {showBalance ? formatCFA(balance) : "••••••"}
-            </span>
-          )}
-          <span className="text-primary font-bold text-sm">FCFA</span>
-        </div>
-        <div className="flex gap-3 mt-4">
-          <div className="flex-1 rounded-xl bg-navy-deep p-3">
-            <div className="flex items-center gap-1 mb-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-success" />
-              <span className="text-[10px] text-muted-foreground uppercase">Total Dépôts</span>
-            </div>
-            {isLoading ? <Skeleton className="h-5 w-16" /> : <span className="font-display font-bold text-foreground">{formatCFA(totalDeposited)} F</span>}
-          </div>
-          <div className="flex-1 rounded-xl bg-navy-deep p-3">
-            <div className="flex items-center gap-1 mb-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-destructive" />
-              <span className="text-[10px] text-muted-foreground uppercase">Total Retraits</span>
-            </div>
-            {isLoading ? <Skeleton className="h-5 w-16" /> : <span className="font-display font-bold text-foreground">{formatCFA(totalWithdrawn)} F</span>}
-          </div>
-        </div>
       </div>
 
-      <div className="flex justify-center gap-6 px-4">
-        {quickActions.map((action) => {
-          const Icon = action.icon;
+      {/* Notification bar */}
+      <div className="mx-4 rounded-2xl bg-secondary border border-border px-4 py-3 flex items-center gap-3 overflow-hidden">
+        <Bell className="w-4 h-4 text-primary shrink-0" />
+        <p className="text-muted-foreground text-xs truncate">
+          ****2540 a recharge 35,000 • ****1531 a retire 12,000 • ****1698 a active VIP3
+        </p>
+      </div>
+
+      {/* Actions rapides */}
+      <div className="mx-4 rounded-2xl bg-secondary border border-border py-4 grid grid-cols-4 gap-2">
+        {quickActions.map((a) => {
+          const Icon = a.icon;
           return (
-            <button key={action.label} onClick={() => navigate(action.path)} className="flex flex-col items-center gap-1.5">
-              <div className="w-12 h-12 rounded-2xl bg-secondary flex items-center justify-center">
-                <Icon className={`w-5 h-5 ${action.color}`} />
+            <button key={a.label} onClick={() => navigate(a.path)} className="flex flex-col items-center gap-1.5">
+              <div className="w-11 h-11 rounded-full bg-navy-deep flex items-center justify-center">
+                <Icon className="w-5 h-5 text-foreground" />
               </div>
-              <span className="text-[10px] text-muted-foreground font-medium uppercase">{action.label}</span>
+              <span className="text-xs text-foreground">{a.label}</span>
             </button>
           );
         })}
       </div>
 
-      <div className="mx-4 rounded-3xl overflow-hidden">
-        <img src={bannerImg} alt="VOGUE ASSET" className="w-full h-36 object-cover" width={1200} height={512} />
+      {/* R&D stats */}
+      <div className="px-4">
+        <p className="text-center text-muted-foreground text-sm mb-3">Réalisations en R&D technologique et brevets</p>
+        <div className="grid grid-cols-4 gap-2 text-center">
+          {[
+            { value: "7", label: "Pays" },
+            { value: "11,000+", label: "Ingénieurs R&D" },
+            { value: "12", label: "Domaines" },
+            { value: "9300+", label: "Brevets" },
+          ].map((s) => (
+            <div key={s.label}>
+              <p className="font-display font-bold text-primary text-lg">{s.value}</p>
+              <p className="text-muted-foreground text-[10px] leading-tight">{s.label}</p>
+            </div>
+          ))}
+        </div>
       </div>
 
-      <div className="px-4">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="font-display font-bold text-foreground">Transactions Récentes</h2>
-          <button className="text-primary text-xs font-medium">Voir tout →</button>
-        </div>
-        <div className="rounded-2xl bg-secondary p-6 flex items-center justify-center">
-          <p className="text-muted-foreground text-sm">Aucune transaction</p>
+      {/* Featured */}
+      <div className="mx-4 relative rounded-3xl overflow-hidden h-40">
+        <img src={newModelImg} alt="Nouveaux modèles" className="absolute inset-0 w-full h-full object-cover" loading="lazy" width={1024} height={1024} />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent flex items-end p-4">
+          <h3 className="font-display font-extrabold text-foreground text-2xl">Nouveaux modèles<br/>NIO ES6</h3>
         </div>
       </div>
     </div>

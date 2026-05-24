@@ -1,11 +1,17 @@
-import { Home, ShoppingBag, Users, User } from "lucide-react";
+import { Home, Users, User } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
+
+const NioIcon = ({ className }: { className?: string }) => (
+  <svg viewBox="0 0 24 24" className={className} fill="currentColor">
+    <path d="M3 14 L12 6 L21 14 L17 14 L12 10 L7 14 Z M5 17 L9 17 L9 19 L5 19 Z M15 17 L19 17 L19 19 L15 19 Z" />
+  </svg>
+);
 
 const tabs = [
   { path: "/", label: "Accueil", icon: Home },
-  { path: "/units", label: "Unités", icon: ShoppingBag },
-  { path: "/team", label: "Team", icon: Users },
-  { path: "/profile", label: "Profil", icon: User },
+  { path: "/units", label: "Produit", icon: NioIcon },
+  { path: "/team", label: "Equipes", icon: Users },
+  { path: "/profile", label: "Mon compte", icon: User },
 ];
 
 const BottomNav = () => {
@@ -23,7 +29,7 @@ const BottomNav = () => {
               key={tab.path}
               onClick={() => navigate(tab.path)}
               className={`flex flex-col items-center gap-0.5 px-3 py-1.5 transition-colors ${
-                isActive ? "text-primary" : "text-muted-foreground"
+                isActive ? "text-foreground" : "text-muted-foreground"
               }`}
             >
               <Icon className="w-5 h-5" />
