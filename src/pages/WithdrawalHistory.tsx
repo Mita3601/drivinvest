@@ -7,16 +7,16 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 const formatCFA = (n: number) => n.toLocaleString("fr-FR");
 
-const statusColors: Record<string, string> = {
-  pending: "bg-primary/15 text-primary",
-  approved: "bg-success/15 text-success",
-  rejected: "bg-destructive/15 text-destructive",
+const statusInfo: Record<string, { label: string; color: string }> = {
+  pending: { label: "En traitement", color: "text-primary" },
+  approved: { label: "Succès", color: "text-success" },
+  rejected: { label: "Rejeté", color: "text-destructive" },
 };
 
-const statusLabels: Record<string, string> = {
-  pending: "En attente",
-  approved: "Payé",
-  rejected: "Rejeté",
+const txRef = (id: string, date: string) => {
+  const d = new Date(date);
+  const stamp = `${String(d.getFullYear()).slice(-2)}${String(d.getMonth() + 1).padStart(2, "0")}${String(d.getDate()).padStart(2, "0")}${String(d.getHours()).padStart(2, "0")}${String(d.getMinutes()).padStart(2, "0")}`;
+  return `B${stamp}${id.replace(/-/g, "").slice(0, 7).toUpperCase()}`;
 };
 
 const WithdrawalHistory = () => {
@@ -39,34 +39,44 @@ const WithdrawalHistory = () => {
   });
 
   return (
-    <div className="pb-24 space-y-5">
-      <div className="flex items-center gap-3 px-4 pt-4">
-        <button onClick={() => navigate(-1)} className="w-9 h-9 rounded-xl bg-secondary flex items-center justify-center">
-          <ArrowLeft className="w-4 h-4 text-foreground" />
+    <div className="pb-24">
+      <div className="flex items-center gap-3 px-4 py-4 relative">
+        <button onClick={() => navigate(-1)} className="text-foreground">
+          <ArrowLeft className="w-5 h-5" />
         </button>
-        <h1 className="font-display font-bold text-lg text-foreground">Historique Retraits</h1>
+        <h1 className="absolute left-0 right-0 text-center font-display font-bold text-base text-foreground pointer-events-none">
+          Historique des retraits
+        </h1>
       </div>
       <div className="px-4 space-y-3">
-        {isLoading
-          ? Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-20 rounded-2xl" />)
-          : !withdrawals?.length ? (
-              <div className="rounded-2xl bg-secondary border border-border p-6 text-center">
-                <p className="text-muted-foreground text-sm">Aucun retrait pour le moment</p>
-              </div>
-            ) : withdrawals.map((tx) => (
-              <div key={tx.id} className="rounded-2xl bg-secondary border border-border p-4 flex items-center gap-3">
-                <div className="flex-1">
-                  <p className="font-display font-bold text-foreground text-sm">{formatCFA(tx.amount)} F</p>
-                  <p className="text-muted-foreground text-xs">{tx.method?.toUpperCase()} • {tx.wallet_number}</p>
-                  <p className="text-muted-foreground text-[10px] mt-0.5">
-                    {new Date(tx.created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" })}
-                  </p>
+        {isLoading ? (
+          Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-32 rounded-2xl" />)
+        ) : !withdrawals?.length ? (
+          <div className="rounded-2xl bg-secondary border border-border p-6 text-center">
+            <p className="text-muted-foreground text-sm">Aucun retrait pour le moment</p>
+          </div>
+        ) : (
+          <>
+            {withdrawals.map((tx) => {
+              const info = statusInfo[tx.status] || { label: tx.status, color: "text-muted-foreground" };
+              const received = Number(tx.amount) * 0.95;
+              return (
+                <div key={tx.id} className="rounded-2xl bg-secondary p-4">
+                  <div className="flex items-start justify-between mb-3">
+                    <p className="font-display font-bold text-foreground text-sm">{txRef(tx.id, tx.created_at)}</p>
+                    <span className={`text-xs font-medium ${info.color}`}>{info.label}</span>
+                  </div>
+                  <div className="space-y-1 text-sm">
+                    <div className="flex"><span className="text-muted-foreground w-20">Montant</span><span className="text-foreground">: CFA {formatCFA(Number(tx.amount))}</span></div>
+                    <div className="flex"><span className="text-muted-foreground w-20">Reçu</span><span className="text-foreground">: CFA {formatCFA(Math.round(received))}</span></div>
+                    <div className="flex"><span className="text-muted-foreground w-20">Heure</span><span className="text-foreground">: {new Date(tx.created_at).toLocaleString("fr-FR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit" }).replace(",", "")}</span></div>
+                  </div>
                 </div>
-                <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full ${statusColors[tx.status] || ""}`}>
-                  {statusLabels[tx.status] || tx.status}
-                </span>
-              </div>
-            ))}
+              );
+            })}
+            <p className="text-center text-muted-foreground text-sm pt-6">Aucune autre donnée</p>
+          </>
+        )}
       </div>
     </div>
   );
