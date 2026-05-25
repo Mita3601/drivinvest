@@ -13,6 +13,8 @@ const operators = [
   { id: "moov", label: "Moov Money" },
 ];
 
+const countries = ["Côte d'Ivoire", "Sénégal", "Bénin", "Togo", "Mali", "Burkina Faso", "Cameroun", "Guinée"];
+
 const formatCFA = (n: number) => n.toLocaleString("fr-FR");
 
 const RetraitPage = () => {
@@ -22,6 +24,7 @@ const RetraitPage = () => {
   const [amount, setAmount] = useState("");
   const [operator, setOperator] = useState<string | null>(null);
   const [walletNumber, setWalletNumber] = useState("");
+  const [country, setCountry] = useState(countries[0]);
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
@@ -34,41 +37,36 @@ const RetraitPage = () => {
   });
 
   const balance = profile?.balance ?? 0;
-  const feePercent = (settings as any)?.withdrawal_fee_percent ?? 5;
-  const minWithdrawal = (settings as any)?.min_withdrawal ?? 1000;
+  const feePercent = (settings as any)?.withdrawal_fee_percent ?? 15;
+  const minWithdrawal = (settings as any)?.min_withdrawal ?? 1500;
   const numAmount = Number(amount) || 0;
   const fee = Math.round(numAmount * feePercent / 100);
   const netAmount = numAmount - fee;
 
   const handleSubmit = async () => {
-    if (!numAmount || !operator || !walletNumber || !user) {
+    if (!numAmount || !operator || !walletNumber || !user || !country) {
       toast({ title: "Erreur", description: "Remplissez tous les champs.", variant: "destructive" });
       return;
     }
-    if (numAmount < minWithdrawal) {
-      toast({ title: "Erreur", description: `Retrait minimum : ${formatCFA(minWithdrawal)} F`, variant: "destructive" });
-      return;
-    }
-    if (numAmount > balance) {
-      toast({ title: "Erreur", description: "Solde insuffisant.", variant: "destructive" });
-      return;
-    }
     setLoading(true);
-    try {
-      const { error } = await supabase.from("transactions").insert({
-        user_id: user.id,
-        amount: numAmount,
-        type: "withdrawal",
-        method: operator,
-        wallet_number: walletNumber,
-      });
-      if (error) throw error;
-      setSubmitted(true);
-      toast({ title: "Demande envoyée !", description: "Votre retrait est en cours de traitement." });
-    } catch (err: any) {
-      toast({ title: "Erreur", description: err.message, variant: "destructive" });
-    }
+    const { data, error } = await supabase.rpc("request_withdrawal", {
+      p_amount: numAmount,
+      p_method: operator,
+      p_wallet: walletNumber,
+      p_country: country,
+    });
     setLoading(false);
+    if (error) {
+      toast({ title: "Erreur", description: error.message, variant: "destructive" });
+      return;
+    }
+    const res = data as any;
+    if (!res?.success) {
+      toast({ title: "Erreur", description: res?.error || "Échec", variant: "destructive" });
+      return;
+    }
+    setSubmitted(true);
+    toast({ title: "Demande envoyée !", description: "Votre retrait est en cours de traitement." });
   };
 
   if (submitted) {
@@ -107,6 +105,17 @@ const RetraitPage = () => {
           onChange={(e) => setAmount(e.target.value)}
           className="w-full bg-secondary border border-border rounded-xl px-4 py-3 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary"
         />
+      </div>
+
+      <div className="px-4 space-y-2">
+        <label className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Pays</label>
+        <select
+          value={country}
+          onChange={(e) => setCountry(e.target.value)}
+          className="w-full bg-secondary border border-border rounded-xl px-4 py-3 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+        >
+          {countries.map((c) => <option key={c} value={c}>{c}</option>)}
+        </select>
       </div>
 
       <div className="px-4 space-y-2">

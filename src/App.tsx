@@ -23,6 +23,9 @@ import AdminUsers from "./pages/admin/AdminUsers";
 import AdminDeposits from "./pages/admin/AdminDeposits";
 import AdminWithdrawals from "./pages/admin/AdminWithdrawals";
 import AdminProducts from "./pages/admin/AdminProducts";
+import AdminPromoters from "./pages/admin/AdminPromoters";
+import AdminReferrals from "./pages/admin/AdminReferrals";
+import AdminAntifraud from "./pages/admin/AdminAntifraud";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -74,6 +77,9 @@ const App = () => (
               <Route path="deposits" element={<AdminDeposits />} />
               <Route path="withdrawals" element={<AdminWithdrawals />} />
               <Route path="products" element={<AdminProducts />} />
+              <Route path="promoters" element={<AdminPromoters />} />
+              <Route path="referrals" element={<AdminReferrals />} />
+              <Route path="antifraud" element={<AdminAntifraud />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
