@@ -74,7 +74,7 @@ const Team = () => {
         {/* Levels */}
         <div className="rounded-2xl bg-secondary border-gold-gradient p-4 space-y-3">
           {[
-            { lv: "LV1", pct: "10%", people: stats?.l1 ?? 0 },
+            { lv: "LV1", pct: "15%", people: stats?.l1 ?? 0 },
             { lv: "LV2", pct: "5%", people: stats?.l2 ?? 0 },
             { lv: "LV3", pct: "2%", people: stats?.l3 ?? 0 },
           ].map((row) => (
