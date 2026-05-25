@@ -44,6 +44,27 @@ export type Database = {
         }
         Relationships: []
       }
+      daily_bonuses: {
+        Row: {
+          amount: number
+          claimed_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          claimed_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          claimed_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       investment_types: {
         Row: {
           created_at: string
@@ -130,13 +151,40 @@ export type Database = {
           },
         ]
       }
+      mission_rewards: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          mission_type: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          id?: string
+          mission_type: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          mission_type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           balance: number
+          country: string | null
           created_at: string
           email: string | null
           full_name: string | null
           id: string
+          is_frozen: boolean
+          is_promoter: boolean
           referral_code: string
           referred_by: string | null
           total_deposited: number
@@ -146,10 +194,13 @@ export type Database = {
         }
         Insert: {
           balance?: number
+          country?: string | null
           created_at?: string
           email?: string | null
           full_name?: string | null
           id?: string
+          is_frozen?: boolean
+          is_promoter?: boolean
           referral_code?: string
           referred_by?: string | null
           total_deposited?: number
@@ -159,10 +210,13 @@ export type Database = {
         }
         Update: {
           balance?: number
+          country?: string | null
           created_at?: string
           email?: string | null
           full_name?: string | null
           id?: string
+          is_frozen?: boolean
+          is_promoter?: boolean
           referral_code?: string
           referred_by?: string | null
           total_deposited?: number
@@ -210,9 +264,12 @@ export type Database = {
       transactions: {
         Row: {
           amount: number
+          country: string | null
           created_at: string
+          fee_amount: number | null
           id: string
           method: string | null
+          net_amount: number | null
           proof_url: string | null
           sender_number: string | null
           status: Database["public"]["Enums"]["transaction_status"]
@@ -223,9 +280,12 @@ export type Database = {
         }
         Insert: {
           amount: number
+          country?: string | null
           created_at?: string
+          fee_amount?: number | null
           id?: string
           method?: string | null
+          net_amount?: number | null
           proof_url?: string | null
           sender_number?: string | null
           status?: Database["public"]["Enums"]["transaction_status"]
@@ -236,9 +296,12 @@ export type Database = {
         }
         Update: {
           amount?: number
+          country?: string | null
           created_at?: string
+          fee_amount?: number | null
           id?: string
           method?: string | null
+          net_amount?: number | null
           proof_url?: string | null
           sender_number?: string | null
           status?: Database["public"]["Enums"]["transaction_status"]
@@ -272,6 +335,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_adjust_balance: {
+        Args: { p_new_balance: number; p_user_id: string }
+        Returns: Json
+      }
+      admin_grant_product: {
+        Args: { p_type_id: string; p_user_id: string }
+        Returns: Json
+      }
+      admin_toggle_freeze: { Args: { p_user_id: string }; Returns: Json }
+      admin_toggle_promoter: { Args: { p_user_id: string }; Returns: Json }
       apply_referral_bonus: {
         Args: { deposit_amount: number; depositor_user_id: string }
         Returns: undefined
@@ -285,6 +358,15 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      request_withdrawal: {
+        Args: {
+          p_amount: number
+          p_country: string
+          p_method: string
+          p_wallet: string
+        }
+        Returns: Json
       }
     }
     Enums: {
