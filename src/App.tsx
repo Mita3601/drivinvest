@@ -18,6 +18,7 @@ import DownloadPage from "./pages/DownloadPage";
 import WithdrawalHistory from "./pages/WithdrawalHistory";
 import BonusQuotidien from "./pages/BonusQuotidien";
 import CentreMissions from "./pages/CentreMissions";
+import MyProducts from "./pages/MyProducts";
 import AdminLayout from "./pages/admin/AdminLayout";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminDeposits from "./pages/admin/AdminDeposits";
