@@ -18,6 +18,7 @@ import DownloadPage from "./pages/DownloadPage";
 import WithdrawalHistory from "./pages/WithdrawalHistory";
 import BonusQuotidien from "./pages/BonusQuotidien";
 import CentreMissions from "./pages/CentreMissions";
+import MyProducts from "./pages/MyProducts";
 import AdminLayout from "./pages/admin/AdminLayout";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminDeposits from "./pages/admin/AdminDeposits";
@@ -71,6 +72,7 @@ const App = () => (
               <Route path="/retrait-history" element={<WithdrawalHistory />} />
               <Route path="/bonus" element={<BonusQuotidien />} />
               <Route path="/missions" element={<CentreMissions />} />
+              <Route path="/my-products" element={<MyProducts />} />
             </Route>
             <Route path="/admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
               <Route index element={<AdminUsers />} />

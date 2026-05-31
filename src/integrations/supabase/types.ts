@@ -72,6 +72,7 @@ export type Database = {
           duration: number
           id: string
           image_url: string | null
+          is_starter: boolean
           name: string
           price: number
           stock_limit: number | null
@@ -84,6 +85,7 @@ export type Database = {
           duration?: number
           id?: string
           image_url?: string | null
+          is_starter?: boolean
           name: string
           price: number
           stock_limit?: number | null
@@ -96,6 +98,7 @@ export type Database = {
           duration?: number
           id?: string
           image_url?: string | null
+          is_starter?: boolean
           name?: string
           price?: number
           stock_limit?: number | null
