@@ -72,6 +72,7 @@ const App = () => (
               <Route path="/retrait-history" element={<WithdrawalHistory />} />
               <Route path="/bonus" element={<BonusQuotidien />} />
               <Route path="/missions" element={<CentreMissions />} />
+              <Route path="/my-products" element={<MyProducts />} />
             </Route>
             <Route path="/admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
               <Route index element={<AdminUsers />} />
