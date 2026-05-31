@@ -1,4 +1,4 @@
-import { ArrowDownCircle, ArrowUpCircle, Gift, HelpCircle, Bell } from "lucide-react";
+import { ArrowDownCircle, ArrowUpCircle, Gift, HelpCircle, Bell, Lock, Sparkles, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useProfile } from "@/hooks/useProfile";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -73,6 +73,33 @@ const Index = () => {
           ****2540 a recharge 35,000 • ****1531 a retire 12,000 • ****1698 a active VIP3
         </p>
       </div>
+
+      {/* Pass Starter — required first purchase */}
+      <button
+        onClick={() => navigate("/units")}
+        className="mx-4 w-[calc(100%-2rem)] text-left rounded-3xl overflow-hidden relative group bg-gradient-to-br from-primary/30 via-navy-deep to-destructive/30 border-gold-gradient card-glow"
+      >
+        <div className="absolute inset-0 opacity-30 bg-[radial-gradient(circle_at_top_right,hsl(var(--primary)/0.6),transparent_60%)]" />
+        <div className="relative p-4 flex items-center gap-4">
+          <div className="shrink-0 w-14 h-14 rounded-2xl bg-navy-deep border-gold-gradient flex items-center justify-center">
+            <Lock className="w-6 h-6 text-primary" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-1.5 mb-1">
+              <Sparkles className="w-3.5 h-3.5 text-primary" />
+              <span className="text-[10px] font-bold uppercase tracking-wider text-primary">Étape obligatoire</span>
+            </div>
+            <h3 className="font-display font-extrabold text-foreground text-base leading-tight">
+              Activez le Pass Starter — 2 500 F
+            </h3>
+            <p className="text-muted-foreground text-xs mt-1 leading-snug">
+              Achat unique requis pour débloquer tous les autres produits. Gains 6 000 F versés au 30ᵉ jour.
+            </p>
+          </div>
+          <ChevronRight className="w-5 h-5 text-primary shrink-0" />
+        </div>
+      </button>
+
 
       {/* Actions rapides */}
       <div className="mx-4 rounded-2xl bg-secondary border border-border py-4 grid grid-cols-4 gap-2">
