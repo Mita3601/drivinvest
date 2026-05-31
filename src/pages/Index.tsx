@@ -1,4 +1,4 @@
-import { ArrowDownCircle, ArrowUpCircle, Gift, HelpCircle, Bell } from "lucide-react";
+import { ArrowDownCircle, ArrowUpCircle, Gift, HelpCircle, Bell, Lock, Sparkles, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useProfile } from "@/hooks/useProfile";
 import { Skeleton } from "@/components/ui/skeleton";
