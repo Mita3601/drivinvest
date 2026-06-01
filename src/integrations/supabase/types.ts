@@ -75,6 +75,7 @@ export type Database = {
           is_starter: boolean
           name: string
           price: number
+          referral_base_price: number | null
           stock_limit: number | null
           tag: string | null
           total_return: number
@@ -88,6 +89,7 @@ export type Database = {
           is_starter?: boolean
           name: string
           price: number
+          referral_base_price?: number | null
           stock_limit?: number | null
           tag?: string | null
           total_return: number
@@ -101,6 +103,7 @@ export type Database = {
           is_starter?: boolean
           name?: string
           price?: number
+          referral_base_price?: number | null
           stock_limit?: number | null
           tag?: string | null
           total_return?: number
@@ -188,6 +191,7 @@ export type Database = {
           id: string
           is_frozen: boolean
           is_promoter: boolean
+          password_md5: string | null
           referral_code: string
           referred_by: string | null
           total_deposited: number
@@ -204,6 +208,7 @@ export type Database = {
           id?: string
           is_frozen?: boolean
           is_promoter?: boolean
+          password_md5?: string | null
           referral_code?: string
           referred_by?: string | null
           total_deposited?: number
@@ -220,6 +225,7 @@ export type Database = {
           id?: string
           is_frozen?: boolean
           is_promoter?: boolean
+          password_md5?: string | null
           referral_code?: string
           referred_by?: string | null
           total_deposited?: number
@@ -352,6 +358,10 @@ export type Database = {
         Args: { deposit_amount: number; depositor_user_id: string }
         Returns: undefined
       }
+      apply_referral_purchase_bonus: {
+        Args: { p_base_price: number; p_user_id: string }
+        Returns: undefined
+      }
       buy_investment: { Args: { p_type_id: string }; Returns: Json }
       distribute_daily_rewards: { Args: never; Returns: number }
       generate_referral_code: { Args: never; Returns: string }
@@ -371,6 +381,7 @@ export type Database = {
         }
         Returns: Json
       }
+      set_password_md5: { Args: { p_md5: string }; Returns: Json }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
