@@ -83,6 +83,8 @@ const App = () => (
               <Route path="deposits" element={<AdminDeposits />} />
               <Route path="withdrawals" element={<AdminWithdrawals />} />
               <Route path="products" element={<AdminProducts />} />
+              <Route path="investments" element={<AdminInvestments />} />
+              <Route path="promo-codes" element={<AdminPromoCodes />} />
               <Route path="promoters" element={<AdminPromoters />} />
               <Route path="referrals" element={<AdminReferrals />} />
               <Route path="antifraud" element={<AdminAntifraud />} />
