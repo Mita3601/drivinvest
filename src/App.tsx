@@ -27,6 +27,9 @@ import AdminProducts from "./pages/admin/AdminProducts";
 import AdminPromoters from "./pages/admin/AdminPromoters";
 import AdminReferrals from "./pages/admin/AdminReferrals";
 import AdminAntifraud from "./pages/admin/AdminAntifraud";
+import AdminInvestments from "./pages/admin/AdminInvestments";
+import AdminPromoCodes from "./pages/admin/AdminPromoCodes";
+import PromoCode from "./pages/PromoCode";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
