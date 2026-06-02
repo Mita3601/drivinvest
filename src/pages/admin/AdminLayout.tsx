@@ -2,13 +2,15 @@ import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useAdmin } from "@/hooks/useAdmin";
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
-import { Users, ArrowDownCircle, ArrowUpCircle, ShoppingBag, ArrowLeft, Star, Network, ShieldAlert } from "lucide-react";
+import { Users, ArrowDownCircle, ArrowUpCircle, ShoppingBag, ArrowLeft, Star, Network, ShieldAlert, Wallet, Ticket } from "lucide-react";
 
 const tabs = [
   { path: "/admin", label: "Utilisateurs", icon: Users },
   { path: "/admin/deposits", label: "Dépôts", icon: ArrowDownCircle },
   { path: "/admin/withdrawals", label: "Retraits", icon: ArrowUpCircle },
   { path: "/admin/products", label: "Produits", icon: ShoppingBag },
+  { path: "/admin/investments", label: "Investissements", icon: Wallet },
+  { path: "/admin/promo-codes", label: "Codes promo", icon: Ticket },
   { path: "/admin/promoters", label: "Promoteurs", icon: Star },
   { path: "/admin/referrals", label: "Filleuls", icon: Network },
   { path: "/admin/antifraud", label: "Antifraude", icon: ShieldAlert },
