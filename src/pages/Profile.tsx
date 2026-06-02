@@ -1,6 +1,6 @@
 import {
   ArrowDownCircle, ArrowUpCircle, History, Info, FileText,
-  Headphones, Download, CreditCard, Lock, Gift, Package,
+  Headphones, Download, CreditCard, Lock, Gift, Package, Ticket,
 } from "lucide-react";
 import { useProfile } from "@/hooks/useProfile";
 import { useAuth } from "@/hooks/useAuth";
