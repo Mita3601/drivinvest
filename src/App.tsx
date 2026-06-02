@@ -27,6 +27,9 @@ import AdminProducts from "./pages/admin/AdminProducts";
 import AdminPromoters from "./pages/admin/AdminPromoters";
 import AdminReferrals from "./pages/admin/AdminReferrals";
 import AdminAntifraud from "./pages/admin/AdminAntifraud";
+import AdminInvestments from "./pages/admin/AdminInvestments";
+import AdminPromoCodes from "./pages/admin/AdminPromoCodes";
+import PromoCode from "./pages/PromoCode";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -73,12 +76,15 @@ const App = () => (
               <Route path="/bonus" element={<BonusQuotidien />} />
               <Route path="/missions" element={<CentreMissions />} />
               <Route path="/my-products" element={<MyProducts />} />
+              <Route path="/promo" element={<PromoCode />} />
             </Route>
             <Route path="/admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
               <Route index element={<AdminUsers />} />
               <Route path="deposits" element={<AdminDeposits />} />
               <Route path="withdrawals" element={<AdminWithdrawals />} />
               <Route path="products" element={<AdminProducts />} />
+              <Route path="investments" element={<AdminInvestments />} />
+              <Route path="promo-codes" element={<AdminPromoCodes />} />
               <Route path="promoters" element={<AdminPromoters />} />
               <Route path="referrals" element={<AdminReferrals />} />
               <Route path="antifraud" element={<AdminAntifraud />} />

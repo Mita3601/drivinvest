@@ -1,6 +1,6 @@
 import {
   ArrowDownCircle, ArrowUpCircle, History, Info, FileText,
-  Headphones, Download, CreditCard, Lock, Gift, Package,
+  Headphones, Download, CreditCard, Lock, Gift, Package, Ticket,
 } from "lucide-react";
 import { useProfile } from "@/hooks/useProfile";
 import { useAuth } from "@/hooks/useAuth";
@@ -29,6 +29,7 @@ const Profile = () => {
 
   const shortcuts = [
     { label: "Mes produits", icon: Package, path: "/my-products" },
+    { label: "Code promo", icon: Ticket, path: "/promo" },
     { label: "À propos", icon: Info, path: "/about" },
     { label: "Réglementation", icon: FileText, path: "/rules" },
     { label: "Historique", icon: History, path: "/retrait-history" },
