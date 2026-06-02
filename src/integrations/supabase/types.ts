@@ -354,6 +354,10 @@ export type Database = {
       }
       admin_toggle_freeze: { Args: { p_user_id: string }; Returns: Json }
       admin_toggle_promoter: { Args: { p_user_id: string }; Returns: Json }
+      admin_update_investment_type: {
+        Args: { p_daily_return: number; p_id: string; p_price: number }
+        Returns: Json
+      }
       apply_referral_bonus: {
         Args: { deposit_amount: number; depositor_user_id: string }
         Returns: undefined
