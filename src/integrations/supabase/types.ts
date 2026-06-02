@@ -183,6 +183,8 @@ export type Database = {
       }
       profiles: {
         Row: {
+          active_deposit_bonus_pct: number
+          active_product_discount_pct: number
           balance: number
           country: string | null
           created_at: string
@@ -200,6 +202,8 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          active_deposit_bonus_pct?: number
+          active_product_discount_pct?: number
           balance?: number
           country?: string | null
           created_at?: string
@@ -217,6 +221,8 @@ export type Database = {
           user_id: string
         }
         Update: {
+          active_deposit_bonus_pct?: number
+          active_product_discount_pct?: number
           balance?: number
           country?: string | null
           created_at?: string
@@ -242,6 +248,74 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      promo_code_uses: {
+        Row: {
+          id: string
+          promo_id: string
+          used_at: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          promo_id: string
+          used_at?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          promo_id?: string
+          used_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "promo_code_uses_promo_id_fkey"
+            columns: ["promo_id"]
+            isOneToOne: false
+            referencedRelation: "promo_codes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      promo_codes: {
+        Row: {
+          code: string
+          created_at: string
+          created_by: string | null
+          ends_at: string
+          id: string
+          max_users: number
+          starts_at: string
+          type: Database["public"]["Enums"]["promo_type"]
+          uses_count: number
+          value: number
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          created_by?: string | null
+          ends_at: string
+          id?: string
+          max_users?: number
+          starts_at?: string
+          type: Database["public"]["Enums"]["promo_type"]
+          uses_count?: number
+          value: number
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          created_by?: string | null
+          ends_at?: string
+          id?: string
+          max_users?: number
+          starts_at?: string
+          type?: Database["public"]["Enums"]["promo_type"]
+          uses_count?: number
+          value?: number
+        }
+        Relationships: []
       }
       support_tickets: {
         Row: {
@@ -348,6 +422,17 @@ export type Database = {
         Args: { p_new_balance: number; p_user_id: string }
         Returns: Json
       }
+      admin_create_promo_code: {
+        Args: {
+          p_code: string
+          p_ends_at: string
+          p_max_users: number
+          p_starts_at: string
+          p_type: Database["public"]["Enums"]["promo_type"]
+          p_value: number
+        }
+        Returns: Json
+      }
       admin_grant_product: {
         Args: { p_type_id: string; p_user_id: string }
         Returns: Json
@@ -376,6 +461,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      redeem_promo_code: { Args: { p_code: string }; Returns: Json }
       request_withdrawal: {
         Args: {
           p_amount: number
@@ -390,6 +476,7 @@ export type Database = {
     Enums: {
       app_role: "admin" | "moderator" | "user"
       investment_status: "active" | "completed"
+      promo_type: "balance" | "product_discount" | "deposit_bonus"
       transaction_status: "pending" | "approved" | "rejected"
       transaction_type: "deposit" | "withdrawal"
     }
@@ -521,6 +608,7 @@ export const Constants = {
     Enums: {
       app_role: ["admin", "moderator", "user"],
       investment_status: ["active", "completed"],
+      promo_type: ["balance", "product_discount", "deposit_bonus"],
       transaction_status: ["pending", "approved", "rejected"],
       transaction_type: ["deposit", "withdrawal"],
     },
