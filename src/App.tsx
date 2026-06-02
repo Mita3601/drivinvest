@@ -76,6 +76,7 @@ const App = () => (
               <Route path="/bonus" element={<BonusQuotidien />} />
               <Route path="/missions" element={<CentreMissions />} />
               <Route path="/my-products" element={<MyProducts />} />
+              <Route path="/promo" element={<PromoCode />} />
             </Route>
             <Route path="/admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
               <Route index element={<AdminUsers />} />
