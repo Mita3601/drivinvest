@@ -1,16 +1,71 @@
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useProfile } from "@/hooks/useProfile";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "@/hooks/use-toast";
+import { useState } from "react";
 import carBg from "@/assets/car-vip5.jpg";
 
-const missions = [
-  { id: 1, desc: "Invitez 5 utilisateurs d'investissement de niveau 1 pour obtenir CFA 1,200", actuel: 5, objectif: 5, reward: 1200 },
-  { id: 2, desc: "Invitez 10 utilisateurs d'investissement de niveau 1 pour obtenir CFA 2,500", actuel: 7, objectif: 10, reward: 2500 },
-  { id: 3, desc: "Invitez 20 utilisateurs d'investissement de niveau 1 pour obtenir CFA 5,000", actuel: 0, objectif: 20, reward: 5000 },
+const MISSIONS = [
+  { key: "invite_5",  id: 1, objectif: 5,  reward: 1200, desc: "Invitez 5 utilisateurs d'investissement de niveau 1 pour obtenir CFA 1,200" },
+  { key: "invite_10", id: 2, objectif: 10, reward: 2500, desc: "Invitez 10 utilisateurs d'investissement de niveau 1 pour obtenir CFA 2,500" },
+  { key: "invite_20", id: 3, objectif: 20, reward: 5000, desc: "Invitez 20 utilisateurs d'investissement de niveau 1 pour obtenir CFA 5,000" },
 ];
 
 const CentreMissions = () => {
   const navigate = useNavigate();
-  const total = 1200;
+  const { user } = useAuth();
+  const { data: profile } = useProfile();
+  const qc = useQueryClient();
+  const [loadingKey, setLoadingKey] = useState<string | null>(null);
+
+  const { data: lvl1Count = 0 } = useQuery({
+    queryKey: ["mission_lvl1_count", profile?.id],
+    queryFn: async () => {
+      if (!profile?.id) return 0;
+      const { count } = await supabase
+        .from("profiles")
+        .select("*", { count: "exact", head: true })
+        .eq("referred_by", profile.id);
+      return count ?? 0;
+    },
+    enabled: !!profile?.id,
+  });
+
+  const { data: claimed = [] } = useQuery({
+    queryKey: ["mission_claims", user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      const { data } = await supabase
+        .from("mission_rewards")
+        .select("mission_type, amount")
+        .eq("user_id", user.id);
+      return data ?? [];
+    },
+    enabled: !!user?.id,
+  });
+
+  const totalEarned = claimed.reduce((s, m) => s + Number(m.amount), 0);
+
+  const handleClaim = async (key: string) => {
+    setLoadingKey(key);
+    const { data, error } = await supabase.rpc("claim_mission_reward", { p_mission_type: key });
+    setLoadingKey(null);
+    if (error) {
+      toast({ title: "Erreur", description: error.message, variant: "destructive" });
+      return;
+    }
+    const r = data as any;
+    if (r?.success) {
+      toast({ title: "🎉 Récompense reçue !", description: `+${r.amount} F crédités` });
+      qc.invalidateQueries({ queryKey: ["mission_claims"] });
+      qc.invalidateQueries({ queryKey: ["profile"] });
+    } else {
+      toast({ title: "Impossible", description: r?.error || "Erreur", variant: "destructive" });
+    }
+  };
 
   return (
     <div className="pb-24">
@@ -27,14 +82,16 @@ const CentreMissions = () => {
 
       <div className="px-4 -mt-16 relative z-10">
         <div className="rounded-2xl bg-navy-deep border-gold-gradient p-5 text-center">
-          <p className="font-display font-extrabold text-foreground text-4xl">CFA {total.toLocaleString("fr-FR")}</p>
+          <p className="font-display font-extrabold text-foreground text-4xl">CFA {totalEarned.toLocaleString("fr-FR")}</p>
           <p className="text-muted-foreground text-sm mt-1">Récompenses cumulées</p>
         </div>
       </div>
 
       <div className="px-4 mt-5 space-y-3">
-        {missions.map((m) => {
-          const done = m.actuel >= m.objectif;
+        {MISSIONS.map((m) => {
+          const actuel = Math.min(lvl1Count, m.objectif);
+          const isClaimed = claimed.some((c) => c.mission_type === m.key);
+          const canClaim = lvl1Count >= m.objectif && !isClaimed;
           return (
             <div key={m.id} className="rounded-2xl bg-secondary p-4">
               <div className="flex gap-4 mb-3">
@@ -43,7 +100,7 @@ const CentreMissions = () => {
               </div>
               <div className="grid grid-cols-3 mb-3">
                 <div className="text-center">
-                  <p className="font-display font-bold text-foreground text-lg">{m.actuel}</p>
+                  <p className="font-display font-bold text-foreground text-lg">{actuel}</p>
                   <p className="text-muted-foreground text-xs">Actuel</p>
                 </div>
                 <div className="text-center">
@@ -51,19 +108,28 @@ const CentreMissions = () => {
                   <p className="text-muted-foreground text-xs">Objectif</p>
                 </div>
                 <div className="text-center">
-                  <p className="font-display font-bold text-foreground text-lg">{m.actuel}/{m.objectif}</p>
+                  <p className="font-display font-bold text-foreground text-lg">{actuel}/{m.objectif}</p>
                   <p className="text-muted-foreground text-xs">Progression</p>
                 </div>
               </div>
               <button
-                disabled={!done}
+                disabled={!canClaim || loadingKey === m.key}
+                onClick={() => handleClaim(m.key)}
                 className={`w-full py-3 rounded-xl font-display font-medium ${
-                  done
+                  isClaimed
+                    ? "bg-muted text-muted-foreground"
+                    : canClaim
                     ? "bg-gradient-to-r from-amber-500 to-orange-500 text-background"
                     : "bg-muted text-muted-foreground"
                 }`}
               >
-                {done ? "Reçu" : "En cours"}
+                {loadingKey === m.key
+                  ? "..."
+                  : isClaimed
+                  ? "Reçu"
+                  : canClaim
+                  ? "Réclamer"
+                  : "En cours"}
               </button>
             </div>
           );

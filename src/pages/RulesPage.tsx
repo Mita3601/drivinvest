@@ -5,11 +5,11 @@ const rules = [
   "Chaque utilisateur doit s'inscrire avec une adresse email valide.",
   "Le solde est crédité uniquement après validation de la preuve de paiement par l'administration.",
   "Les revenus quotidiens sont distribués automatiquement chaque jour sur votre solde.",
-  "Le retrait minimum est de 1 000 FCFA. Des frais de 5% sont appliqués sur chaque retrait.",
-  "Tout utilisateur peut parrainer d'autres membres et recevoir des commissions sur 3 niveaux : 10%, 5%, 2%.",
+  "Le retrait minimum est de 1 500 FCFA. Des frais de 5% sont appliqués sur chaque retrait.",
+  "Tout utilisateur peut parrainer d'autres membres et recevoir des commissions sur 3 niveaux : 20%, 5%, 1%.",
   "Les investissements sont d'une durée fixe de 180 jours. Aucun remboursement anticipé n'est possible.",
   "Tout comportement frauduleux entraînera la suspension immédiate du compte sans préavis.",
-  "Vogue Asset se réserve le droit de modifier les conditions d'utilisation à tout moment.",
+  "drivinvest se réserve le droit de modifier les conditions d'utilisation à tout moment.",
   "En utilisant la plateforme, vous acceptez l'intégralité de ces conditions.",
 ];
 

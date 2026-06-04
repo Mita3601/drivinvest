@@ -69,7 +69,7 @@ const Units = () => {
     <div className="pb-4">
       {/* Hero */}
       <div className="relative h-44">
-        <img src={bannerImg} alt="Showroom NIO" className="w-full h-full object-cover" width={1024} height={1024} />
+        <img src={bannerImg} alt="Showroom drivinvest" className="w-full h-full object-cover" width={1024} height={1024} />
         <div className="absolute inset-0 bg-gradient-to-b from-transparent to-background" />
       </div>
 
@@ -77,11 +77,11 @@ const Units = () => {
       <div className="mx-4 -mt-10 relative rounded-3xl bg-secondary border-gold-gradient p-4 grid grid-cols-2 gap-4 text-center">
         <div className="border-r border-border">
           <p className="font-display font-bold text-foreground text-2xl">{myInvestments ?? 0}</p>
-          <p className="text-muted-foreground text-xs">Mes produits ›</p>
+          <p className="text-muted-foreground text-xs">Mes produits</p>
         </div>
         <div>
           <p className="font-display font-bold text-foreground text-2xl">CFA {formatCFA(totalRevenue)}</p>
-          <p className="text-muted-foreground text-xs">Revenu total ›</p>
+          <p className="text-muted-foreground text-xs">Revenu total</p>
         </div>
       </div>
 
