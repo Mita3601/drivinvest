@@ -27,7 +27,7 @@ const Index = () => {
     <div className="space-y-5 pb-4">
       {/* Hero banner with logo */}
       <div className="relative -mt-px">
-        <img src={bannerImg} alt="NIO Asset" className="w-full h-44 object-cover" width={1600} height={640} />
+        <img src={bannerImg} alt="drivinvest" className="w-full h-44 object-cover" width={1600} height={640} />
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background" />
       </div>
 
@@ -66,12 +66,19 @@ const Index = () => {
         </div>
       </div>
 
-      {/* Notification bar */}
+      {/* Notification bar — défilement infini */}
       <div className="mx-4 rounded-2xl bg-secondary border border-border px-4 py-3 flex items-center gap-3 overflow-hidden">
         <Bell className="w-4 h-4 text-primary shrink-0" />
-        <p className="text-muted-foreground text-xs truncate">
-          ****2540 a recharge 35,000 • ****1531 a retire 12,000 • ****1698 a active VIP3
-        </p>
+        <div className="relative flex-1 overflow-hidden">
+          <div className="flex whitespace-nowrap animate-marquee">
+            <span className="text-muted-foreground text-xs pr-12">
+              ****2540 a rechargé 35,000 • ****1531 a retiré 12,000 • ****1698 a activé VIP3 • ****8821 a rechargé 50,000 • ****7732 a retiré 8,500 • ****4410 a activé VIP4
+            </span>
+            <span className="text-muted-foreground text-xs pr-12" aria-hidden="true">
+              ****2540 a rechargé 35,000 • ****1531 a retiré 12,000 • ****1698 a activé VIP3 • ****8821 a rechargé 50,000 • ****7732 a retiré 8,500 • ****4410 a activé VIP4
+            </span>
+          </div>
+        </div>
       </div>
 
       {/* Pass Starter — required first purchase */}
@@ -138,7 +145,7 @@ const Index = () => {
       <div className="mx-4 relative rounded-3xl overflow-hidden h-40">
         <img src={newModelImg} alt="Nouveaux modèles" className="absolute inset-0 w-full h-full object-cover" loading="lazy" width={1024} height={1024} />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent flex items-end p-4">
-          <h3 className="font-display font-extrabold text-foreground text-2xl">Nouveaux modèles<br/>NIO ES6</h3>
+          <h3 className="font-display font-extrabold text-foreground text-2xl">Nouveaux modèles<br/>drivinvest</h3>
         </div>
       </div>
     </div>
