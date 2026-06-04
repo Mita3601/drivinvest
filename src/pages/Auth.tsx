@@ -46,7 +46,7 @@ const Auth = () => {
     <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4">
       <div className="w-full max-w-sm space-y-6">
         <div className="text-center">
-          <h1 className="font-display font-extrabold text-3xl text-gradient-gold">VOGUE ASSET</h1>
+          <h1 className="font-display font-extrabold text-3xl text-gradient-gold">drivinvest</h1>
           <p className="text-muted-foreground text-sm mt-2">
             {isLogin ? "Connectez-vous à votre compte" : "Créez votre compte"}
           </p>

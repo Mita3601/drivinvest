@@ -76,7 +76,7 @@ const Team = () => {
           {[
             { lv: "LV1", pct: "20%", people: stats?.l1 ?? 0 },
             { lv: "LV2", pct: "5%", people: stats?.l2 ?? 0 },
-            { lv: "LV3", pct: "2%", people: stats?.l3 ?? 0 },
+            { lv: "LV3", pct: "1%", people: stats?.l3 ?? 0 },
           ].map((row) => (
             <div key={row.lv} className="grid grid-cols-3 items-center gap-2">
               <div>
@@ -100,12 +100,12 @@ const Team = () => {
           <div className="rounded-2xl bg-secondary border-gold-gradient p-4 relative overflow-hidden">
             <img src={carSilver} alt="" className="w-full h-16 object-contain" loading="lazy" width={1024} height={1024}/>
             <p className="font-display font-bold text-foreground text-3xl mt-1">{totalPersons}</p>
-            <p className="text-muted-foreground text-xs">Total personnes ›</p>
+            <p className="text-muted-foreground text-xs">Total personnes</p>
           </div>
           <div className="rounded-2xl bg-secondary border-gold-gradient p-4 relative overflow-hidden">
             <img src={carGold} alt="" className="w-full h-16 object-contain" loading="lazy" width={1024} height={1024}/>
             <p className="font-display font-bold text-foreground text-3xl mt-1">CFA 0</p>
-            <p className="text-muted-foreground text-xs">Total recompenses ›</p>
+            <p className="text-muted-foreground text-xs">Total recompenses</p>
           </div>
         </div>
       </div>

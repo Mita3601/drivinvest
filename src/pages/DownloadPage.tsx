@@ -17,7 +17,7 @@ const DownloadPage = () => {
         </div>
         <h2 className="font-display font-bold text-lg text-foreground">Installer l'application</h2>
         <p className="text-muted-foreground text-sm leading-relaxed">
-          Pour installer Vogue Asset sur votre téléphone, ouvrez cette page dans votre navigateur
+          Pour installer drivinvest sur votre téléphone, ouvrez cette page dans votre navigateur
           et cliquez sur <strong className="text-foreground">"Ajouter à l'écran d'accueil"</strong> dans le menu de votre navigateur.
         </p>
         <div className="w-full border-t border-border pt-4 mt-2">
