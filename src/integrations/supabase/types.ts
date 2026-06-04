@@ -452,6 +452,7 @@ export type Database = {
         Returns: undefined
       }
       buy_investment: { Args: { p_type_id: string }; Returns: Json }
+      claim_mission_reward: { Args: { p_mission_type: string }; Returns: Json }
       distribute_daily_rewards: { Args: never; Returns: number }
       generate_referral_code: { Args: never; Returns: string }
       has_role: {
