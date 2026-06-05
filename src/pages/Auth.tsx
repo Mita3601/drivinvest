@@ -3,8 +3,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import { Eye, EyeOff, LogIn, UserPlus } from "lucide-react";
-import { md5 } from "js-md5";
-import { supabase } from "@/integrations/supabase/client";
+
+
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
