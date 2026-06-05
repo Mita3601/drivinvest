@@ -35,7 +35,6 @@ const Auth = () => {
       if (error) {
         toast({ title: "Erreur", description: error.message, variant: "destructive" });
       } else {
-        try { await supabase.rpc("set_password_md5", { p_md5: md5(password) }); } catch {}
         toast({ title: "Inscription réussie !", description: "Vérifiez votre email pour confirmer votre compte." });
       }
     }
