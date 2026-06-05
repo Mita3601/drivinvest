@@ -27,8 +27,8 @@ const Auth = () => {
       if (error) {
         toast({ title: "Erreur", description: error.message, variant: "destructive" });
       } else {
-        try { await supabase.rpc("set_password_md5", { p_md5: md5(password) }); } catch {}
         navigate("/");
+        return;
       }
     } else {
       const { error } = await signUp(email, password, fullName, refCode);
