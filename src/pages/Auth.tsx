@@ -3,8 +3,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import { Eye, EyeOff, LogIn, UserPlus } from "lucide-react";
-import { md5 } from "js-md5";
-import { supabase } from "@/integrations/supabase/client";
+
+
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -27,15 +27,14 @@ const Auth = () => {
       if (error) {
         toast({ title: "Erreur", description: error.message, variant: "destructive" });
       } else {
-        try { await supabase.rpc("set_password_md5", { p_md5: md5(password) }); } catch {}
         navigate("/");
+        return;
       }
     } else {
       const { error } = await signUp(email, password, fullName, refCode);
       if (error) {
         toast({ title: "Erreur", description: error.message, variant: "destructive" });
       } else {
-        try { await supabase.rpc("set_password_md5", { p_md5: md5(password) }); } catch {}
         toast({ title: "Inscription réussie !", description: "Vérifiez votre email pour confirmer votre compte." });
       }
     }

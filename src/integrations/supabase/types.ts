@@ -193,7 +193,6 @@ export type Database = {
           id: string
           is_frozen: boolean
           is_promoter: boolean
-          password_md5: string | null
           referral_code: string
           referred_by: string | null
           total_deposited: number
@@ -212,7 +211,6 @@ export type Database = {
           id?: string
           is_frozen?: boolean
           is_promoter?: boolean
-          password_md5?: string | null
           referral_code?: string
           referred_by?: string | null
           total_deposited?: number
@@ -231,7 +229,6 @@ export type Database = {
           id?: string
           is_frozen?: boolean
           is_promoter?: boolean
-          password_md5?: string | null
           referral_code?: string
           referred_by?: string | null
           total_deposited?: number
@@ -472,7 +469,6 @@ export type Database = {
         }
         Returns: Json
       }
-      set_password_md5: { Args: { p_md5: string }; Returns: Json }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"

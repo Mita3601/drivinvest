@@ -119,7 +119,7 @@ const CentreMissions = () => {
                   isClaimed
                     ? "bg-muted text-muted-foreground"
                     : canClaim
-                    ? "bg-gradient-to-r from-amber-500 to-orange-500 text-background"
+                    ? "bg-primary text-primary-foreground"
                     : "bg-muted text-muted-foreground"
                 }`}
               >
