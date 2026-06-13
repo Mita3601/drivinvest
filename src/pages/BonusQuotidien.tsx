@@ -1,22 +1,61 @@
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
 
 const BonusQuotidien = () => {
   const navigate = useNavigate();
-  const [days, setDays] = useState(1);
-  const [claimed, setClaimed] = useState(false);
+  const qc = useQueryClient();
+  const [days, setDays] = useState(0);
+  const [canClaim, setCanClaim] = useState(false);
+  const [nextAt, setNextAt] = useState<Date | null>(null);
+  const [now, setNow] = useState(new Date());
+  const [loading, setLoading] = useState(false);
 
-  const claim = () => {
-    if (claimed) {
-      toast({ title: "Déjà pointé aujourd'hui", description: "Revenez demain après minuit." });
+  const loadStatus = async () => {
+    const { data, error } = await supabase.rpc("get_daily_bonus_status");
+    if (error) return;
+    const d = data as any;
+    setDays(d?.days ?? 0);
+    setCanClaim(!!d?.can_claim);
+    setNextAt(d?.next_at ? new Date(d.next_at) : null);
+  };
+
+  useEffect(() => {
+    loadStatus();
+    const t = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(t);
+  }, []);
+
+  const countdown = () => {
+    if (!nextAt) return "";
+    const ms = nextAt.getTime() - now.getTime();
+    if (ms <= 0) return "Disponible";
+    const h = Math.floor(ms / 3600000);
+    const m = Math.floor((ms % 3600000) / 60000);
+    const s = Math.floor((ms % 60000) / 1000);
+    return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+  };
+
+  const claim = async () => {
+    if (loading) return;
+    setLoading(true);
+    const { data, error } = await supabase.rpc("claim_daily_bonus");
+    setLoading(false);
+    const r = data as any;
+    if (error || !r?.success) {
+      toast({ title: "Indisponible", description: r?.error || "Réessayez plus tard." });
+      await loadStatus();
       return;
     }
-    setClaimed(true);
-    setDays((d) => d + 1);
-    toast({ title: "+50 FCFA", description: "Bonus quotidien crédité." });
+    toast({ title: `+${r.amount} FCFA`, description: "Bonus quotidien crédité." });
+    await loadStatus();
+    qc.invalidateQueries({ queryKey: ["profile"] });
   };
+
+  const canClaimNow = canClaim && (!nextAt || nextAt.getTime() <= now.getTime());
 
   return (
     <div className="pb-24">
@@ -39,7 +78,7 @@ const BonusQuotidien = () => {
         </div>
 
         <p className="text-muted-foreground text-base mt-6">
-          Vous avez pointé {days} jour{days > 1 ? "s" : ""} consécutif{days > 1 ? "s" : ""}
+          Vous avez pointé {days} jour{days > 1 ? "s" : ""}
         </p>
 
         <div className="flex items-center justify-center gap-10 mt-6">
@@ -54,18 +93,25 @@ const BonusQuotidien = () => {
           </div>
         </div>
 
+        {!canClaimNow && nextAt && (
+          <p className="text-muted-foreground text-sm mt-4">
+            Prochain pointage dans <span className="text-foreground font-medium">{countdown()}</span>
+          </p>
+        )}
+
         <button
           onClick={claim}
-          className="w-full mt-8 py-4 rounded-2xl bg-navy-card border-gold-gradient text-foreground font-display font-medium text-lg"
+          disabled={!canClaimNow || loading}
+          className="w-full mt-6 py-4 rounded-2xl bg-navy-card border-gold-gradient text-foreground font-display font-medium text-lg disabled:opacity-50"
         >
-          {claimed ? "Pointé" : "Pointer"}
+          {loading ? "..." : canClaimNow ? "Pointer" : "Indisponible"}
         </button>
 
         <div className="w-full mt-6 rounded-2xl bg-secondary border border-border p-5 space-y-3">
           <h3 className="font-display font-bold text-foreground">Conseils utiles</h3>
-          <p className="text-muted-foreground text-sm">1. Récompense pour la connexion quotidienne : 50 FCFA.</p>
-          <p className="text-muted-foreground text-sm">2. Connectez-vous une fois par jour.</p>
-          <p className="text-muted-foreground text-sm">3. Connectez-vous à nouveau après minuit chaque jour.</p>
+          <p className="text-muted-foreground text-sm">1. Récompense quotidienne : 50 FCFA créditée directement sur votre solde.</p>
+          <p className="text-muted-foreground text-sm">2. Le premier pointage est disponible 24h après la création de votre compte.</p>
+          <p className="text-muted-foreground text-sm">3. Chaque pointage suivant est disponible 24h après le précédent.</p>
         </div>
       </div>
     </div>
