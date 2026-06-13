@@ -449,9 +449,11 @@ export type Database = {
         Returns: undefined
       }
       buy_investment: { Args: { p_type_id: string }; Returns: Json }
+      claim_daily_bonus: { Args: never; Returns: Json }
       claim_mission_reward: { Args: { p_mission_type: string }; Returns: Json }
       distribute_daily_rewards: { Args: never; Returns: number }
       generate_referral_code: { Args: never; Returns: string }
+      get_daily_bonus_status: { Args: never; Returns: Json }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
