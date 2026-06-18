@@ -2,10 +2,10 @@ import { ArrowDownCircle, ArrowUpCircle, Gift, HelpCircle, Bell, Lock, Sparkles,
 import { useNavigate } from "react-router-dom";
 import { useProfile } from "@/hooks/useProfile";
 import { Skeleton } from "@/components/ui/skeleton";
-import bannerImg from "@/assets/car-banner.jpg";
-import bonusImg from "@/assets/car-vip6.jpg";
-import missionsImg from "@/assets/car-vip5.jpg";
-import newModelImg from "@/assets/car-vip4.jpg";
+import bannerImg from "@/assets/pc-banner.jpg";
+import bonusImg from "@/assets/pc-vip6.jpg";
+import missionsImg from "@/assets/pc-vip5.jpg";
+import newModelImg from "@/assets/pc-vip4.jpg";
 
 const formatCFA = (n: number) => n.toLocaleString("fr-FR");
 
@@ -27,7 +27,7 @@ const Index = () => {
     <div className="space-y-5 pb-4">
       {/* Hero banner with logo */}
       <div className="relative -mt-px">
-        <img src={bannerImg} alt="drivinvest" className="w-full h-44 object-cover" width={1600} height={640} />
+        <img src={bannerImg} alt="PixelVest" className="w-full h-44 object-cover" width={1600} height={640} />
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background" />
       </div>
 
@@ -145,7 +145,7 @@ const Index = () => {
       <div className="mx-4 relative rounded-3xl overflow-hidden h-40">
         <img src={newModelImg} alt="Nouveaux modèles" className="absolute inset-0 w-full h-full object-cover" loading="lazy" width={1024} height={1024} />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent flex items-end p-4">
-          <h3 className="font-display font-extrabold text-foreground text-2xl">Nouveaux modèles<br/>drivinvest</h3>
+          <h3 className="font-display font-extrabold text-foreground text-2xl">Nouvelles machines<br/>PixelVest</h3>
         </div>
       </div>
     </div>

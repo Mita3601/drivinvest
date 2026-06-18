@@ -4,9 +4,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import teamHero from "@/assets/car-team.jpg";
-import carSilver from "@/assets/car-vip1.jpg";
-import carGold from "@/assets/car-vip3.jpg";
+import teamHero from "@/assets/pc-team.jpg";
+import pcSilver from "@/assets/pc-vip1.jpg";
+import pcGold from "@/assets/pc-vip3.jpg";
 
 const Team = () => {
   const { data: profile, isLoading } = useProfile();
@@ -98,12 +98,12 @@ const Team = () => {
         {/* Two stat cards */}
         <div className="grid grid-cols-2 gap-3">
           <div className="rounded-2xl bg-secondary border-gold-gradient p-4 relative overflow-hidden">
-            <img src={carSilver} alt="" className="w-full h-16 object-contain" loading="lazy" width={1024} height={1024}/>
+            <img src={pcSilver} alt="" className="w-full h-16 object-contain" loading="lazy" width={1024} height={1024}/>
             <p className="font-display font-bold text-foreground text-3xl mt-1">{totalPersons}</p>
             <p className="text-muted-foreground text-xs">Total personnes</p>
           </div>
           <div className="rounded-2xl bg-secondary border-gold-gradient p-4 relative overflow-hidden">
-            <img src={carGold} alt="" className="w-full h-16 object-contain" loading="lazy" width={1024} height={1024}/>
+            <img src={pcGold} alt="" className="w-full h-16 object-contain" loading="lazy" width={1024} height={1024}/>
             <p className="font-display font-bold text-foreground text-3xl mt-1">CFA 0</p>
             <p className="text-muted-foreground text-xs">Total recompenses</p>
           </div>

@@ -6,7 +6,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
 import { useState } from "react";
-import carBg from "@/assets/car-vip5.jpg";
+import pcBg from "@/assets/pc-vip5.jpg";
 
 const MISSIONS = [
   { key: "invite_5",  id: 1, objectif: 5,  reward: 1200, desc: "Invitez 5 utilisateurs d'investissement de niveau 1 pour obtenir CFA 1,200" },
@@ -70,7 +70,7 @@ const CentreMissions = () => {
   return (
     <div className="pb-24">
       <div className="relative h-52">
-        <img src={carBg} alt="" className="absolute inset-0 w-full h-full object-cover" />
+        <img src={pcBg} alt="" className="absolute inset-0 w-full h-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/40 to-background" />
         <button onClick={() => navigate(-1)} className="absolute top-5 left-4 z-10 text-foreground">
           <ArrowLeft className="w-6 h-6" />
