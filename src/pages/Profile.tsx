@@ -7,7 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useNavigate } from "react-router-dom";
 import { useAdmin } from "@/hooks/useAdmin";
-import carHero from "@/assets/car-vip2.jpg";
+import pcHero from "@/assets/pc-vip2.jpg";
 
 const formatCFA = (n: number) => n.toLocaleString("fr-FR");
 
@@ -42,9 +42,9 @@ const Profile = () => {
 
   return (
     <div className="pb-24">
-      {/* Hero with car background */}
+      {/* Hero with tech background */}
       <div className="relative h-64">
-        <img src={carHero} alt="" className="absolute inset-0 w-full h-full object-cover" />
+        <img src={pcHero} alt="" className="absolute inset-0 w-full h-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/60 to-background" />
         <div className="relative z-10 px-5 pt-6 flex justify-between items-start">
           <div>

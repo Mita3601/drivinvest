@@ -4,15 +4,15 @@ import { useProfile } from "@/hooks/useProfile";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
-import bannerImg from "@/assets/car-vip4.jpg";
-import car1 from "@/assets/car-vip1.jpg";
-import car2 from "@/assets/car-vip2.jpg";
-import car3 from "@/assets/car-vip3.jpg";
-import car4 from "@/assets/car-vip4.jpg";
-import car5 from "@/assets/car-vip5.jpg";
-import car6 from "@/assets/car-vip6.jpg";
+import bannerImg from "@/assets/pc-banner.jpg";
+import pc1 from "@/assets/pc-vip1.jpg";
+import pc2 from "@/assets/pc-vip2.jpg";
+import pc3 from "@/assets/pc-vip3.jpg";
+import pc4 from "@/assets/pc-vip4.jpg";
+import pc5 from "@/assets/pc-vip5.jpg";
+import pc6 from "@/assets/pc-vip6.jpg";
 
-const carImages = [car1, car2, car3, car4, car5, car6, car1, car2, car3, car4];
+const productImages = [pc1, pc2, pc3, pc4, pc5, pc6, pc1, pc2, pc3, pc4];
 
 const formatCFA = (n: number) => n.toLocaleString("fr-FR");
 
@@ -69,7 +69,7 @@ const Units = () => {
     <div className="pb-4">
       {/* Hero */}
       <div className="relative h-44">
-        <img src={bannerImg} alt="Showroom drivinvest" className="w-full h-full object-cover" width={1024} height={1024} />
+        <img src={bannerImg} alt="Showroom PixelVest" className="w-full h-full object-cover" width={1600} height={640} />
         <div className="absolute inset-0 bg-gradient-to-b from-transparent to-background" />
       </div>
 
@@ -92,7 +92,7 @@ const Units = () => {
           : types?.map((item, i) => (
               <div key={item.id} className="flex items-start gap-3 py-4">
                 <img
-                  src={carImages[i % carImages.length]}
+                  src={productImages[i % productImages.length]}
                   alt={item.name}
                   className="w-24 h-24 rounded-2xl object-cover shrink-0"
                   loading="lazy"
