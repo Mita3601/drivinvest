@@ -10,6 +10,7 @@ import Team from "./pages/Team";
 import Profile from "./pages/Profile";
 import Auth from "./pages/Auth";
 import RechargePage from "./pages/RechargePage";
+import RechargeReturn from "./pages/RechargeReturn";
 import RetraitPage from "./pages/RetraitPage";
 import SupportPage from "./pages/SupportPage";
 import AboutPage from "./pages/AboutPage";
@@ -67,6 +68,7 @@ const App = () => (
               <Route path="/team" element={<Team />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/recharge" element={<RechargePage />} />
+              <Route path="/recharge/return" element={<RechargeReturn />} />
               <Route path="/retrait" element={<RetraitPage />} />
               <Route path="/support" element={<SupportPage />} />
               <Route path="/about" element={<AboutPage />} />

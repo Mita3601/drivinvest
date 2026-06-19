@@ -351,6 +351,7 @@ export type Database = {
           method: string | null
           net_amount: number | null
           proof_url: string | null
+          reference: string | null
           sender_number: string | null
           status: Database["public"]["Enums"]["transaction_status"]
           type: Database["public"]["Enums"]["transaction_type"]
@@ -367,6 +368,7 @@ export type Database = {
           method?: string | null
           net_amount?: number | null
           proof_url?: string | null
+          reference?: string | null
           sender_number?: string | null
           status?: Database["public"]["Enums"]["transaction_status"]
           type: Database["public"]["Enums"]["transaction_type"]
@@ -383,6 +385,7 @@ export type Database = {
           method?: string | null
           net_amount?: number | null
           proof_url?: string | null
+          reference?: string | null
           sender_number?: string | null
           status?: Database["public"]["Enums"]["transaction_status"]
           type?: Database["public"]["Enums"]["transaction_type"]
@@ -451,7 +454,12 @@ export type Database = {
       buy_investment: { Args: { p_type_id: string }; Returns: Json }
       claim_daily_bonus: { Args: never; Returns: Json }
       claim_mission_reward: { Args: { p_mission_type: string }; Returns: Json }
+      confirm_westpay_deposit: {
+        Args: { p_amount: number; p_reference: string }
+        Returns: Json
+      }
       distribute_daily_rewards: { Args: never; Returns: number }
+      expire_stale_deposits: { Args: never; Returns: number }
       generate_referral_code: { Args: never; Returns: string }
       get_daily_bonus_status: { Args: never; Returns: Json }
       has_role: {

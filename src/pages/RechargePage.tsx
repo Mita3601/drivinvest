@@ -1,85 +1,43 @@
 import { useState } from "react";
-import { ArrowLeft, Upload, CheckCircle, Smartphone } from "lucide-react";
+import { ArrowLeft, ShieldCheck, Smartphone } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
-import { useQuery } from "@tanstack/react-query";
 
-const quickAmounts = [5000, 10000, 20000, 25000, 50000, 100000];
+const quickAmounts = [2500, 5000, 10000, 25000, 50000, 100000];
 
-const methods = [
-  { id: "orange", label: "Orange Money", color: "bg-orange-500" },
-  { id: "mtn", label: "MTN MoMo", color: "bg-yellow-500" },
-  { id: "moov", label: "Moov Money", color: "bg-blue-500" },
+const countries = [
+  { id: "Burkina Faso", label: "Burkina Faso", flag: "🇧🇫" },
+  { id: "Mali", label: "Mali", flag: "🇲🇱" },
+  { id: "Cote d'Ivoire", label: "Côte d'Ivoire", flag: "🇨🇮" },
+  { id: "Togo", label: "Togo", flag: "🇹🇬" },
+  { id: "Benin", label: "Bénin", flag: "🇧🇯" },
 ];
 
 const RechargePage = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
   const [amount, setAmount] = useState<number | null>(null);
-  const [method, setMethod] = useState<string | null>(null);
-  const [file, setFile] = useState<File | null>(null);
+  const [country, setCountry] = useState<string>("Burkina Faso");
   const [loading, setLoading] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
-
-  const { data: settings } = useQuery({
-    queryKey: ["app_settings"],
-    queryFn: async () => {
-      const { data } = await supabase.from("app_settings").select("*").limit(1).single();
-      return data;
-    },
-  });
-
-  const getAdminNumber = () => {
-    if (!settings || !method) return "—";
-    if (method === "orange") return (settings as any).deposit_orange_number || "—";
-    if (method === "mtn") return (settings as any).deposit_mtn_number || "—";
-    if (method === "moov") return (settings as any).deposit_moov_number || "—";
-    return "—";
-  };
 
   const handleSubmit = async () => {
-    if (!amount || !method || !file || !user) {
-      toast({ title: "Erreur", description: "Remplissez tous les champs et ajoutez la preuve.", variant: "destructive" });
+    if (!amount || amount < 500) {
+      toast({ title: "Montant invalide", description: "Minimum 500 FCFA.", variant: "destructive" });
       return;
     }
     setLoading(true);
     try {
-      const ext = file.name.split(".").pop();
-      const path = `${user.id}/${Date.now()}.${ext}`;
-      const { error: uploadError } = await supabase.storage.from("transaction-proofs").upload(path, file);
-      if (uploadError) throw uploadError;
-
-      const { error: txError } = await supabase.from("transactions").insert({
-        user_id: user.id,
-        amount,
-        type: "deposit",
-        method,
-        proof_url: path,
+      const { data, error } = await supabase.functions.invoke("westpay-init", {
+        body: { amount, country, returnOrigin: window.location.origin },
       });
-      if (txError) throw txError;
-
-      setSubmitted(true);
-      toast({ title: "Demande envoyée !", description: "Votre dépôt est en cours de vérification." });
+      if (error) throw error;
+      if (!data?.paymentUrl) throw new Error("Réponse invalide du serveur");
+      window.location.href = data.paymentUrl;
     } catch (err: any) {
-      toast({ title: "Erreur", description: err.message, variant: "destructive" });
+      toast({ title: "Erreur", description: err.message || "Impossible de lancer le paiement", variant: "destructive" });
+      setLoading(false);
     }
-    setLoading(false);
   };
-
-  if (submitted) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center px-6 text-center gap-4">
-        <CheckCircle className="w-16 h-16 text-success" />
-        <h2 className="font-display font-bold text-xl text-foreground">Vérification en cours</h2>
-        <p className="text-muted-foreground text-sm">Votre preuve de paiement a été soumise. Vous serez crédité après validation par l'admin.</p>
-        <button onClick={() => navigate("/")} className="bg-primary text-primary-foreground font-bold py-3 px-8 rounded-xl mt-4">
-          Retour à l'accueil
-        </button>
-      </div>
-    );
-  }
 
   return (
     <div className="pb-24 space-y-5">
@@ -87,7 +45,32 @@ const RechargePage = () => {
         <button onClick={() => navigate(-1)} className="w-9 h-9 rounded-xl bg-secondary flex items-center justify-center">
           <ArrowLeft className="w-4 h-4 text-foreground" />
         </button>
-        <h1 className="font-display font-bold text-lg text-foreground">Recharger</h1>
+        <h1 className="font-display font-bold text-lg text-foreground">Recharger mon compte</h1>
+      </div>
+
+      <div className="mx-4 rounded-2xl bg-primary/10 border border-primary/30 p-4 flex gap-3">
+        <ShieldCheck className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+        <div className="text-xs text-foreground/80 leading-relaxed">
+          Paiement sécurisé via <span className="font-bold text-primary">WestPay</span>. Vous serez redirigé vers la page de paiement Mobile Money. Votre solde est crédité automatiquement après confirmation.
+        </div>
+      </div>
+
+      <div className="px-4 space-y-2">
+        <label className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Pays</label>
+        <div className="grid grid-cols-3 gap-2">
+          {countries.map((c) => (
+            <button
+              key={c.id}
+              onClick={() => setCountry(c.id)}
+              className={`py-2.5 rounded-xl text-xs font-bold border transition-all flex items-center justify-center gap-1.5 ${
+                country === c.id ? "bg-primary text-primary-foreground border-primary" : "bg-secondary border-border text-foreground"
+              }`}
+            >
+              <span className="text-base">{c.flag}</span>
+              <span className="truncate">{c.label}</span>
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="px-4 space-y-2">
@@ -114,51 +97,24 @@ const RechargePage = () => {
         />
       </div>
 
-      <div className="px-4 space-y-2">
-        <label className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Méthode de paiement</label>
-        <div className="flex gap-2">
-          {methods.map((m) => (
-            <button
-              key={m.id}
-              onClick={() => setMethod(m.id)}
-              className={`flex-1 py-3 rounded-xl font-bold text-xs border transition-all ${
-                method === m.id ? "bg-primary text-primary-foreground border-primary" : "bg-secondary border-border text-foreground"
-              }`}
-            >
-              {m.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {method && (
-        <div className="mx-4 rounded-2xl bg-secondary border border-border p-4 space-y-2">
-          <div className="flex items-center gap-2">
-            <Smartphone className="w-4 h-4 text-primary" />
-            <span className="text-sm font-bold text-foreground">Envoyez le montant au :</span>
-          </div>
-          <p className="text-primary font-display font-extrabold text-xl">{getAdminNumber()}</p>
-          <p className="text-muted-foreground text-xs">Puis envoyez la capture d'écran ci-dessous.</p>
-        </div>
-      )}
-
-      <div className="px-4 space-y-2">
-        <label className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Preuve de paiement</label>
-        <label className="flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border bg-secondary p-6 cursor-pointer hover:border-primary transition-colors">
-          <Upload className="w-6 h-6 text-muted-foreground" />
-          <span className="text-sm text-muted-foreground">{file ? file.name : "Cliquez pour uploader la capture"}</span>
-          <input type="file" accept="image/*" className="hidden" onChange={(e) => setFile(e.target.files?.[0] || null)} />
-        </label>
+      <div className="mx-4 rounded-2xl bg-secondary border border-border p-4 flex items-start gap-3">
+        <Smartphone className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+        <p className="text-xs text-muted-foreground leading-relaxed">
+          Sur la page de paiement, saisissez votre numéro Mobile Money (Orange, MTN, Moov, Wave...). Vous recevrez un message USSD pour valider sur votre téléphone.
+        </p>
       </div>
 
       <div className="px-4">
         <button
           onClick={handleSubmit}
-          disabled={loading || !amount || !method || !file}
+          disabled={loading || !amount}
           className="w-full bg-primary text-primary-foreground font-bold py-3.5 rounded-xl disabled:opacity-50 flex items-center justify-center gap-2"
         >
-          {loading ? <span className="animate-spin w-5 h-5 border-2 border-primary-foreground border-t-transparent rounded-full" /> : "Soumettre la recharge"}
+          {loading ? <span className="animate-spin w-5 h-5 border-2 border-primary-foreground border-t-transparent rounded-full" /> : "Continuer vers le paiement"}
         </button>
+        <p className="text-center text-[10px] text-muted-foreground mt-2">
+          Si vous ne terminez pas le paiement, la transaction sera marquée comme échouée au bout de 15 minutes.
+        </p>
       </div>
     </div>
   );
