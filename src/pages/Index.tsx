@@ -1,4 +1,13 @@
-import { ArrowDownCircle, ArrowUpCircle, Gift, HelpCircle, Bell, Lock, Sparkles, ChevronRight } from "lucide-react";
+import {
+  ArrowDownCircle,
+  ArrowUpCircle,
+  Gift,
+  HelpCircle,
+  Bell,
+  Lock,
+  Sparkles,
+  ChevronRight,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useProfile } from "@/hooks/useProfile";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -27,19 +36,29 @@ const Index = () => {
     <div className="space-y-5 pb-4">
       {/* Hero banner with logo */}
       <div className="relative -mt-px">
-        <img src={bannerImg} alt="PixelVest" className="w-full h-44 object-cover" width={1600} height={640} />
+        <img
+          src={bannerImg}
+          alt="PixelVest"
+          className="w-full h-44 object-cover"
+          width={1600}
+          height={640}
+        />
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background" />
       </div>
 
       {/* Mon compte block */}
       <div className="mx-4 rounded-3xl bg-secondary p-4 border-gold-gradient card-glow -mt-16 relative">
-        <h2 className="text-center font-display font-bold text-foreground text-lg mb-4">Mon compte</h2>
+        <h2 className="text-center font-display font-bold text-foreground text-lg mb-4">
+          Mon compte
+        </h2>
         <div className="grid grid-cols-2 gap-3 mb-3">
           <div className="rounded-2xl bg-navy-deep border-gold-gradient p-4">
             {isLoading ? (
               <Skeleton className="h-7 w-24 mb-1" />
             ) : (
-              <p className="font-display font-bold text-foreground text-xl leading-tight">CFA {formatCFA(balance)}</p>
+              <p className="font-display font-bold text-foreground text-xl leading-tight">
+                CFA {formatCFA(balance)}
+              </p>
             )}
             <span className="text-muted-foreground text-xs">Solde</span>
           </div>
@@ -47,21 +66,49 @@ const Index = () => {
             {isLoading ? (
               <Skeleton className="h-7 w-24 mb-1" />
             ) : (
-              <p className="font-display font-bold text-foreground text-xl leading-tight">CFA {formatCFA(earnings)}</p>
+              <p className="font-display font-bold text-foreground text-xl leading-tight">
+                CFA {formatCFA(earnings)}
+              </p>
             )}
-            <span className="text-muted-foreground text-xs">Revenus cumulés</span>
+            <span className="text-muted-foreground text-xs">
+              Revenus cumulés
+            </span>
           </div>
         </div>
         <div className="grid grid-cols-2 gap-3">
-          <button onClick={() => navigate("/bonus")} className="relative rounded-2xl overflow-hidden h-24 group">
-            <img src={bonusImg} alt="Bonus quotidien" className="absolute inset-0 w-full h-full object-cover" loading="lazy" width={1024} height={1024} />
+          <button
+            onClick={() => navigate("/bonus")}
+            className="relative rounded-2xl overflow-hidden h-24 group"
+          >
+            <img
+              src={bonusImg}
+              alt="Bonus quotidien"
+              className="absolute inset-0 w-full h-full object-cover"
+              loading="lazy"
+              width={1024}
+              height={1024}
+            />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-            <span className="absolute bottom-2 left-3 font-display font-bold text-foreground text-sm">Bonus quotidien ›</span>
+            <span className="absolute bottom-2 left-3 font-display font-bold text-foreground text-sm">
+              Bonus quotidien ›
+            </span>
           </button>
-          <button onClick={() => navigate("/missions")} className="relative rounded-2xl overflow-hidden h-24 group">
-            <img src={missionsImg} alt="Centre de missions" className="absolute inset-0 w-full h-full object-cover" loading="lazy" width={1024} height={1024} />
+          <button
+            onClick={() => navigate("/missions")}
+            className="relative rounded-2xl overflow-hidden h-24 group"
+          >
+            <img
+              src={missionsImg}
+              alt="Centre de missions"
+              className="absolute inset-0 w-full h-full object-cover"
+              loading="lazy"
+              width={1024}
+              height={1024}
+            />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-            <span className="absolute bottom-2 left-3 font-display font-bold text-foreground text-sm">Centre de missions ›</span>
+            <span className="absolute bottom-2 left-3 font-display font-bold text-foreground text-sm">
+              Centre de missions ›
+            </span>
           </button>
         </div>
       </div>
@@ -72,10 +119,17 @@ const Index = () => {
         <div className="relative flex-1 overflow-hidden">
           <div className="flex whitespace-nowrap animate-marquee">
             <span className="text-muted-foreground text-xs pr-12">
-              ****2540 a rechargé 35,000 • ****1531 a retiré 12,000 • ****1698 a activé VIP3 • ****8821 a rechargé 50,000 • ****7732 a retiré 8,500 • ****4410 a activé VIP4
+              ****2540 a rechargé 35,000 • ****1531 a retiré 12,000 • ****1698 a
+              activé VIP3 • ****8821 a rechargé 50,000 • ****7732 a retiré 8,500
+              • ****4410 a activé VIP4
             </span>
-            <span className="text-muted-foreground text-xs pr-12" aria-hidden="true">
-              ****2540 a rechargé 35,000 • ****1531 a retiré 12,000 • ****1698 a activé VIP3 • ****8821 a rechargé 50,000 • ****7732 a retiré 8,500 • ****4410 a activé VIP4
+            <span
+              className="text-muted-foreground text-xs pr-12"
+              aria-hidden="true"
+            >
+              ****2540 a rechargé 35,000 • ****1531 a retiré 12,000 • ****1698 a
+              activé VIP3 • ****8821 a rechargé 50,000 • ****7732 a retiré 8,500
+              • ****4410 a activé VIP4
             </span>
           </div>
         </div>
@@ -94,26 +148,32 @@ const Index = () => {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5 mb-1">
               <Sparkles className="w-3.5 h-3.5 text-primary" />
-              <span className="text-[10px] font-bold uppercase tracking-wider text-primary">Étape obligatoire</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-primary">
+                Étape obligatoire
+              </span>
             </div>
             <h3 className="font-display font-extrabold text-foreground text-base leading-tight">
               Activez le Pass Starter — 2 500 F
             </h3>
             <p className="text-muted-foreground text-xs mt-1 leading-snug">
-              Achat unique requis pour débloquer tous les autres produits. Gains 6 000 F versés au 30ᵉ jour.
+              Achat unique requis pour débloquer tous les autres produits. Gains
+              6 000 F versés au 30ᵉ jour.
             </p>
           </div>
           <ChevronRight className="w-5 h-5 text-primary shrink-0" />
         </div>
       </button>
 
-
       {/* Actions rapides */}
       <div className="mx-4 rounded-2xl bg-secondary border border-border py-4 grid grid-cols-4 gap-2">
         {quickActions.map((a) => {
           const Icon = a.icon;
           return (
-            <button key={a.label} onClick={() => navigate(a.path)} className="flex flex-col items-center gap-1.5">
+            <button
+              key={a.label}
+              onClick={() => navigate(a.path)}
+              className="flex flex-col items-center gap-1.5"
+            >
               <div className="w-11 h-11 rounded-full bg-navy-deep flex items-center justify-center">
                 <Icon className="w-5 h-5 text-foreground" />
               </div>
@@ -125,17 +185,23 @@ const Index = () => {
 
       {/* R&D stats */}
       <div className="px-4">
-        <p className="text-center text-muted-foreground text-sm mb-3">Réalisations en R&D technologique et brevets</p>
+        <p className="text-center text-muted-foreground text-sm mb-3">
+          Réalisations en R&D technologique et brevets
+        </p>
         <div className="grid grid-cols-4 gap-2 text-center">
           {[
-            { value: "7", label: "Pays" },
+            { value: "5", label: "Pays" },
             { value: "11,000+", label: "Ingénieurs R&D" },
             { value: "12", label: "Domaines" },
             { value: "9300+", label: "Brevets" },
           ].map((s) => (
             <div key={s.label}>
-              <p className="font-display font-bold text-primary text-lg">{s.value}</p>
-              <p className="text-muted-foreground text-[10px] leading-tight">{s.label}</p>
+              <p className="font-display font-bold text-primary text-lg">
+                {s.value}
+              </p>
+              <p className="text-muted-foreground text-[10px] leading-tight">
+                {s.label}
+              </p>
             </div>
           ))}
         </div>
@@ -143,9 +209,20 @@ const Index = () => {
 
       {/* Featured */}
       <div className="mx-4 relative rounded-3xl overflow-hidden h-40">
-        <img src={newModelImg} alt="Nouveaux modèles" className="absolute inset-0 w-full h-full object-cover" loading="lazy" width={1024} height={1024} />
+        <img
+          src={newModelImg}
+          alt="Nouveaux modèles"
+          className="absolute inset-0 w-full h-full object-cover"
+          loading="lazy"
+          width={1024}
+          height={1024}
+        />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent flex items-end p-4">
-          <h3 className="font-display font-extrabold text-foreground text-2xl">Nouvelles machines<br/>PixelVest</h3>
+          <h3 className="font-display font-extrabold text-foreground text-2xl">
+            Nouvelles machines
+            <br />
+            PixelVest
+          </h3>
         </div>
       </div>
     </div>

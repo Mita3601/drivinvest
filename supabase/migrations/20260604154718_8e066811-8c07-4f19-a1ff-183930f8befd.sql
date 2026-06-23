@@ -7,7 +7,7 @@ SECURITY DEFINER
 SET search_path = public
 AS $$
 BEGIN
-  IF public.has_role(auth.uid(), 'admin') THEN
+  IF public.has_role(auth.uid(), 'admin') OR auth.uid() IS NULL THEN
     RETURN NEW;
   END IF;
   IF NEW.balance IS DISTINCT FROM OLD.balance

@@ -454,7 +454,7 @@ export type Database = {
       buy_investment: { Args: { p_type_id: string }; Returns: Json }
       claim_daily_bonus: { Args: never; Returns: Json }
       claim_mission_reward: { Args: { p_mission_type: string }; Returns: Json }
-      confirm_westpay_deposit: {
+      oconfirm_westpay_deposit: {
         Args: { p_amount: number; p_reference: string }
         Returns: Json
       }
