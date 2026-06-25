@@ -4,6 +4,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 import teamHero from "@/assets/pc-team.jpg";
 import pcSilver from "@/assets/pc-vip1.jpg";
 import pcGold from "@/assets/pc-vip3.jpg";
@@ -73,6 +74,7 @@ const Team = () => {
   };
 
   const totalPersons = (stats?.l1 ?? 0) + (stats?.l2 ?? 0) + (stats?.l3 ?? 0);
+  const navigate = useNavigate();
 
   return (
     <div className="pb-4">
@@ -191,6 +193,14 @@ const Team = () => {
               {totalPersons}
             </p>
             <p className="text-muted-foreground text-xs">Total personnes</p>
+            <div className="mt-3">
+              <button
+                onClick={() => navigate("/team/referrals")}
+                className="w-full rounded-xl bg-primary text-primary-foreground font-bold py-2 text-sm"
+              >
+                Voir la liste des filleuls
+              </button>
+            </div>
           </div>
           <div className="rounded-2xl bg-secondary border-gold-gradient p-4 relative overflow-hidden">
             <img

@@ -9,9 +9,27 @@ import { useState } from "react";
 import pcBg from "@/assets/pc-vip5.jpg";
 
 const MISSIONS = [
-  { key: "invite_5",  id: 1, objectif: 5,  reward: 1200, desc: "Invitez 5 utilisateurs d'investissement de niveau 1 pour obtenir CFA 1,200" },
-  { key: "invite_10", id: 2, objectif: 10, reward: 2500, desc: "Invitez 10 utilisateurs d'investissement de niveau 1 pour obtenir CFA 2,500" },
-  { key: "invite_20", id: 3, objectif: 20, reward: 5000, desc: "Invitez 20 utilisateurs d'investissement de niveau 1 pour obtenir CFA 5,000" },
+  {
+    key: "invite_5",
+    id: 1,
+    objectif: 5,
+    reward: 1200,
+    desc: "Invitez 5 utilisateurs d'investissement de niveau 1 pour obtenir CFA 1,200",
+  },
+  {
+    key: "invite_10",
+    id: 2,
+    objectif: 10,
+    reward: 2500,
+    desc: "Invitez 10 utilisateurs d'investissement de niveau 1 pour obtenir CFA 2,500",
+  },
+  {
+    key: "invite_20",
+    id: 3,
+    objectif: 20,
+    reward: 5000,
+    desc: "Invitez 20 utilisateurs d'investissement de niveau 1 pour obtenir CFA 5,000",
+  },
 ];
 
 const CentreMissions = () => {
@@ -25,11 +43,19 @@ const CentreMissions = () => {
     queryKey: ["mission_lvl1_count", profile?.id],
     queryFn: async () => {
       if (!profile?.id) return 0;
-      const { count } = await supabase
+      // Count only direct referees who have at least one investment
+      const { data: referees } = await supabase
         .from("profiles")
-        .select("*", { count: "exact", head: true })
+        .select("id")
         .eq("referred_by", profile.id);
-      return count ?? 0;
+      const ids = (referees || []).map((r: any) => r.id);
+      if (!ids.length) return 0;
+      const { data: invs } = await supabase
+        .from("investments")
+        .select("user_id")
+        .in("user_id", ids);
+      const unique = new Set((invs || []).map((i: any) => i.user_id));
+      return unique.size;
     },
     enabled: !!profile?.id,
   });
@@ -51,28 +77,48 @@ const CentreMissions = () => {
 
   const handleClaim = async (key: string) => {
     setLoadingKey(key);
-    const { data, error } = await supabase.rpc("claim_mission_reward", { p_mission_type: key });
+    const { data, error } = await supabase.rpc("claim_mission_reward", {
+      p_mission_type: key,
+    });
     setLoadingKey(null);
     if (error) {
-      toast({ title: "Erreur", description: error.message, variant: "destructive" });
+      toast({
+        title: "Erreur",
+        description: error.message,
+        variant: "destructive",
+      });
       return;
     }
     const r = data as any;
     if (r?.success) {
-      toast({ title: "🎉 Récompense reçue !", description: `+${r.amount} F crédités` });
+      toast({
+        title: "🎉 Récompense reçue !",
+        description: `+${r.amount} F crédités`,
+      });
       qc.invalidateQueries({ queryKey: ["mission_claims"] });
       qc.invalidateQueries({ queryKey: ["profile"] });
     } else {
-      toast({ title: "Impossible", description: r?.error || "Erreur", variant: "destructive" });
+      toast({
+        title: "Impossible",
+        description: r?.error || "Erreur",
+        variant: "destructive",
+      });
     }
   };
 
   return (
     <div className="pb-24">
       <div className="relative h-52">
-        <img src={pcBg} alt="" className="absolute inset-0 w-full h-full object-cover" />
+        <img
+          src={pcBg}
+          alt=""
+          className="absolute inset-0 w-full h-full object-cover"
+        />
         <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/40 to-background" />
-        <button onClick={() => navigate(-1)} className="absolute top-5 left-4 z-10 text-foreground">
+        <button
+          onClick={() => navigate(-1)}
+          className="absolute top-5 left-4 z-10 text-foreground"
+        >
           <ArrowLeft className="w-6 h-6" />
         </button>
         <h1 className="absolute top-16 left-0 right-0 text-center font-display font-extrabold text-foreground text-3xl tracking-wide z-10">
@@ -82,8 +128,12 @@ const CentreMissions = () => {
 
       <div className="px-4 -mt-16 relative z-10">
         <div className="rounded-2xl bg-navy-deep border-gold-gradient p-5 text-center">
-          <p className="font-display font-extrabold text-foreground text-4xl">CFA {totalEarned.toLocaleString("fr-FR")}</p>
-          <p className="text-muted-foreground text-sm mt-1">Récompenses cumulées</p>
+          <p className="font-display font-extrabold text-foreground text-4xl">
+            CFA {totalEarned.toLocaleString("fr-FR")}
+          </p>
+          <p className="text-muted-foreground text-sm mt-1">
+            Récompenses cumulées
+          </p>
         </div>
       </div>
 
@@ -95,20 +145,28 @@ const CentreMissions = () => {
           return (
             <div key={m.id} className="rounded-2xl bg-secondary p-4">
               <div className="flex gap-4 mb-3">
-                <p className="font-display font-bold text-foreground text-lg shrink-0">Mission {m.id}</p>
+                <p className="font-display font-bold text-foreground text-lg shrink-0">
+                  Mission {m.id}
+                </p>
                 <p className="text-muted-foreground text-sm">{m.desc}</p>
               </div>
               <div className="grid grid-cols-3 mb-3">
                 <div className="text-center">
-                  <p className="font-display font-bold text-foreground text-lg">{actuel}</p>
+                  <p className="font-display font-bold text-foreground text-lg">
+                    {actuel}
+                  </p>
                   <p className="text-muted-foreground text-xs">Actuel</p>
                 </div>
                 <div className="text-center">
-                  <p className="font-display font-bold text-foreground text-lg">{m.objectif}</p>
+                  <p className="font-display font-bold text-foreground text-lg">
+                    {m.objectif}
+                  </p>
                   <p className="text-muted-foreground text-xs">Objectif</p>
                 </div>
                 <div className="text-center">
-                  <p className="font-display font-bold text-foreground text-lg">{actuel}/{m.objectif}</p>
+                  <p className="font-display font-bold text-foreground text-lg">
+                    {actuel}/{m.objectif}
+                  </p>
                   <p className="text-muted-foreground text-xs">Progression</p>
                 </div>
               </div>
@@ -119,17 +177,17 @@ const CentreMissions = () => {
                   isClaimed
                     ? "bg-muted text-muted-foreground"
                     : canClaim
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted text-muted-foreground"
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-muted-foreground"
                 }`}
               >
                 {loadingKey === m.key
                   ? "..."
                   : isClaimed
-                  ? "Reçu"
-                  : canClaim
-                  ? "Réclamer"
-                  : "En cours"}
+                    ? "Reçu"
+                    : canClaim
+                      ? "Réclamer"
+                      : "En cours"}
               </button>
             </div>
           );

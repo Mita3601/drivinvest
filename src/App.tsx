@@ -7,6 +7,7 @@ import AppLayout from "./components/AppLayout";
 import Index from "./pages/Index";
 import Units from "./pages/Units";
 import Team from "./pages/Team";
+import ReferralsList from "./pages/ReferralsList";
 import Profile from "./pages/Profile";
 import Auth from "./pages/Auth";
 import RechargePage from "./pages/RechargePage";
@@ -66,6 +67,7 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/units" element={<Units />} />
               <Route path="/team" element={<Team />} />
+              <Route path="/team/referrals" element={<ReferralsList />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/recharge" element={<RechargePage />} />
               <Route path="/recharge/return" element={<RechargeReturn />} />
@@ -80,7 +82,14 @@ const App = () => (
               <Route path="/my-products" element={<MyProducts />} />
               <Route path="/promo" element={<PromoCode />} />
             </Route>
-            <Route path="/admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
+            <Route
+              path="/admin"
+              element={
+                <ProtectedRoute>
+                  <AdminLayout />
+                </ProtectedRoute>
+              }
+            >
               <Route index element={<AdminUsers />} />
               <Route path="deposits" element={<AdminDeposits />} />
               <Route path="withdrawals" element={<AdminWithdrawals />} />

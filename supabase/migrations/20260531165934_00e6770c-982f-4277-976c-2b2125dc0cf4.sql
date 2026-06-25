@@ -51,7 +51,7 @@ BEGIN
     END IF;
   ELSE
     IF NOT v_has_starter THEN
-      RETURN json_build_object('success', false, 'error', 'Vous devez d''abord acheter le Pass Starter (2500 F) avant tout autre produit.');
+      RETURN json_build_object('success', false, 'error', 'Vous devez d''abord acheter le produit de 25000 F avant de pouvoir acheter un autre produit.');
     END IF;
   END IF;
 
