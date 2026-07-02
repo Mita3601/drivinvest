@@ -6,8 +6,19 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
-const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+// Read Supabase configuration from environment. Some deployment UIs forbid
+// secret names starting with `SUPABASE_`, so accept alternate names too.
+const SUPABASE_URL =
+  Deno.env.get("SUPABASE_URL") ??
+  Deno.env.get("PROJECT_URL") ??
+  Deno.env.get("SUPABASE_PROJECT_URL");
+const SUPABASE_SERVICE_ROLE_KEY =
+  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ??
+  Deno.env.get("SERVICE_ROLE_KEY") ??
+  Deno.env.get("SERVICE_KEY");
+// Optional webhook secret to validate incoming requests (recommended).
+const MONEYFUSION_WEBHOOK_SECRET =
+  Deno.env.get("MONEYFUSION_WEBHOOK_SECRET") ?? Deno.env.get("WEBHOOK_SECRET");
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -72,6 +83,29 @@ Deno.serve(async (req) => {
       status,
       amount,
     });
+
+    // If a shared webhook secret is configured, validate it here. This
+    // allows the function to remain public while still ensuring requests
+    // come from a trusted source.
+    if (MONEYFUSION_WEBHOOK_SECRET) {
+      const providedFromHeader =
+        req.headers.get("x-moneyfusion-token") ||
+        req.headers.get("x-webhook-token");
+      const provided =
+        (tokenPay && tokenPay.trim()) ||
+        providedFromHeader ||
+        (typeof payload.token === "string" ? payload.token : "");
+      if (!provided || provided !== MONEYFUSION_WEBHOOK_SECRET) {
+        console.warn("MoneyFusion webhook unauthorized - invalid secret");
+        return new Response(
+          JSON.stringify({ error: "Unauthorized", code: "INVALID_SIGNATURE" }),
+          {
+            status: 401,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          },
+        );
+      }
+    }
 
     const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
