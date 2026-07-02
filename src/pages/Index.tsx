@@ -87,7 +87,7 @@ const Index = () => {
               height={1024}
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-            <span className="absolute bottom-2 left-3 font-display font-bold text-foreground text-sm">
+            <span className="absolute bottom-2 left-3 font-display font-bold text-white text-sm bg-black/60 px-2 py-1 rounded-lg shadow-lg">
               Bonus quotidien ›
             </span>
           </button>
@@ -104,7 +104,7 @@ const Index = () => {
               height={1024}
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-            <span className="absolute bottom-2 left-3 font-display font-bold text-foreground text-sm">
+            <span className="absolute bottom-2 left-3 font-display font-bold text-white text-sm bg-black/60 px-2 py-1 rounded-lg shadow-lg">
               Centre de missions ›
             </span>
           </button>
