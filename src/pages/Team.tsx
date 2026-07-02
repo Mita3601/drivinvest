@@ -23,11 +23,66 @@ const Team = () => {
           l1: 0,
           l2: 0,
           l3: 0,
+          l1_invested: 0,
+          l2_invested: 0,
+          l3_invested: 0,
           l1_reward: 0,
           l2_reward: 0,
           l3_reward: 0,
           total_reward: 0,
         };
+
+      const { data: lvl1Profiles, error: lvl1Err } = await supabase
+        .from("profiles")
+        .select("id,user_id")
+        .eq("referred_by", profile.id);
+      if (lvl1Err) throw lvl1Err;
+      const lvl1Ids = (lvl1Profiles || []).map((p: any) => p.id);
+
+      let lvl2Profiles: any[] = [];
+      let lvl2Ids: string[] = [];
+      if (lvl1Ids.length > 0) {
+        const { data, error } = await supabase
+          .from("profiles")
+          .select("id,user_id")
+          .in("referred_by", lvl1Ids);
+        if (error) throw error;
+        lvl2Profiles = data || [];
+        lvl2Ids = lvl2Profiles.map((p: any) => p.id);
+      }
+
+      let lvl3Profiles: any[] = [];
+      if (lvl2Ids.length > 0) {
+        const { data, error } = await supabase
+          .from("profiles")
+          .select("id,user_id")
+          .in("referred_by", lvl2Ids);
+        if (error) throw error;
+        lvl3Profiles = data || [];
+      }
+
+      const allProfileUserIds = [
+        ...lvl1Profiles.map((p: any) => p.user_id),
+        ...lvl2Profiles.map((p: any) => p.user_id),
+        ...lvl3Profiles.map((p: any) => p.user_id),
+      ].filter(Boolean);
+
+      const investedMap = new Map<string, number>();
+      if (allProfileUserIds.length > 0) {
+        const { data: investments } = await supabase
+          .from("investments")
+          .select("user_id, amount_invested")
+          .in("user_id", allProfileUserIds);
+
+        (investments || []).forEach((inv: any) => {
+          investedMap.set(
+            inv.user_id,
+            (investedMap.get(inv.user_id) || 0) +
+              Number(inv.amount_invested || 0),
+          );
+        });
+      }
+
       const { data: rewards } = await supabase
         .from("referral_rewards")
         .select("referee_id, level, amount")
@@ -56,9 +111,21 @@ const Team = () => {
       }
 
       return {
-        l1: lvl1Referees.size,
-        l2: lvl2Referees.size,
-        l3: lvl3Referees.size,
+        l1: lvl1Ids.length || lvl1Referees.size,
+        l2: lvl2Profiles.length || lvl2Referees.size,
+        l3: lvl3Profiles.length || lvl3Referees.size,
+        l1_invested: lvl1Profiles.reduce(
+          (sum, p: any) => sum + (investedMap.get(p.user_id) || 0),
+          0,
+        ),
+        l2_invested: lvl2Profiles.reduce(
+          (sum, p: any) => sum + (investedMap.get(p.user_id) || 0),
+          0,
+        ),
+        l3_invested: lvl3Profiles.reduce(
+          (sum, p: any) => sum + (investedMap.get(p.user_id) || 0),
+          0,
+        ),
         l1_reward,
         l2_reward,
         l3_reward,

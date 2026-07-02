@@ -3,21 +3,24 @@ import { ArrowLeft, ShieldCheck, Smartphone } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 
 const quickAmounts = [2500, 5000, 10000, 25000, 50000, 100000];
 
 const countries = [
-  { id: "Burkina Faso", label: "Burkina Faso", flag: "🇧🇫" },
-  { id: "Mali", label: "Mali", flag: "🇲🇱" },
+  { id: "Cameroun", label: "Cameroun", flag: "🇨🇲" },
   { id: "Cote d'Ivoire", label: "Côte d'Ivoire", flag: "🇨🇮" },
-  { id: "Togo", label: "Togo", flag: "🇹🇬" },
+  { id: "Burkina Faso", label: "Burkina Faso", flag: "🇧🇫" },
   { id: "Benin", label: "Bénin", flag: "🇧🇯" },
+  { id: "Senegal", label: "Sénégal", flag: "🇸🇳" },
 ];
 
 const RechargePage = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [amount, setAmount] = useState<number | null>(null);
   const [country, setCountry] = useState<string>("Burkina Faso");
+  const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async () => {
@@ -29,18 +32,53 @@ const RechargePage = () => {
       });
       return;
     }
+
+    if (!phone.trim()) {
+      toast({
+        title: "Numéro requis",
+        description:
+          "Veuillez saisir votre numéro de téléphone pour continuer.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke("westpay-init", {
-        body: { amount, country, returnOrigin: window.location.origin },
-      });
+      const { data: sessionData } = await supabase.auth.getSession();
+      const authToken = sessionData?.session?.access_token;
+      const { data, error } = await supabase.functions.invoke(
+        "moneyfusion-init",
+        {
+          headers: authToken
+            ? { Authorization: `Bearer ${authToken}` }
+            : undefined,
+          body: {
+            amount,
+            country,
+            phone: phone.trim(),
+            customerName: user?.user_metadata?.full_name || "Client",
+            returnOrigin: window.location.origin,
+          },
+        },
+      );
       if (error) throw error;
+      // Handle structured error payloads from the function (success: false)
+      if (data?.success === false) {
+        const serverMessage =
+          typeof data.error === "string"
+            ? data.error
+            : "Réponse invalide du serveur";
+        throw new Error(serverMessage);
+      }
       if (!data?.paymentUrl) throw new Error("Réponse invalide du serveur");
       window.location.href = data.paymentUrl;
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : "Impossible de lancer le paiement";
       toast({
         title: "Erreur",
-        description: err.message || "Impossible de lancer le paiement",
+        description: message,
         variant: "destructive",
       });
       setLoading(false);
@@ -65,8 +103,8 @@ const RechargePage = () => {
         <ShieldCheck className="w-5 h-5 text-primary shrink-0 mt-0.5" />
         <div className="text-xs text-foreground/80 leading-relaxed">
           Paiement sécurisé via{" "}
-          <span className="font-bold text-primary">WestPay</span>. Vous serez
-          redirigé vers la page de paiement Mobile Money. Votre solde est
+          <span className="font-bold text-primary">MoneyFusion</span>. Vous
+          serez redirigé vers la page de paiement Mobile Money. Votre solde est
           crédité automatiquement après confirmation.
         </div>
       </div>
@@ -91,6 +129,19 @@ const RechargePage = () => {
             </button>
           ))}
         </div>
+      </div>
+
+      <div className="px-4 space-y-2">
+        <label className="text-xs text-muted-foreground uppercase tracking-wider font-medium">
+          Numéro de téléphone
+        </label>
+        <input
+          type="tel"
+          placeholder="Ex. 0700000000"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          className="w-full bg-secondary border border-border rounded-xl px-4 py-3 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+        />
       </div>
 
       <div className="px-4 space-y-2">
@@ -125,8 +176,8 @@ const RechargePage = () => {
         <Smartphone className="w-5 h-5 text-primary shrink-0 mt-0.5" />
         <p className="text-xs text-muted-foreground leading-relaxed">
           Sur la page de paiement, saisissez votre numéro Mobile Money (Orange,
-          MTN, Moov, Wave...). Vous recevrez un message USSD pour valider sur
-          votre téléphone.
+          MTN, Moov, Wave...) puis validez l’OTP si le paiement l’exige. Le
+          statut du dépôt est mis à jour automatiquement après confirmation.
         </p>
       </div>
 

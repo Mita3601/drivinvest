@@ -1,48 +1,69 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "@/hooks/useProfile";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useNavigate } from "react-router-dom";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
 const maskEmail = (email: string | null) => {
   if (!email) return "---@gmail.com";
   const prefix = email.slice(0, 3);
-  return `${prefix}@gmail.com`;
+  return `${prefix}*****@gmail.com`;
 };
 
 const ReferralsList = () => {
   const { data: profile, isLoading } = useProfile();
   const navigate = useNavigate();
+  const [openLevel, setOpenLevel] = useState<number | null>(1);
 
   const { data: items, isLoading: loading } = useQuery({
     queryKey: ["my_referrals_list", profile?.id],
     queryFn: async () => {
       if (!profile?.id) return [];
-      // 1) get referral entries (unique referees + level)
-      const { data: rewards, error } = await supabase
-        .from("referral_rewards")
-        .select("referee_id, level")
-        .eq("referrer_id", profile.id);
-      if (error) throw error;
-      const byId = new Map<string, number>();
-      (rewards || []).forEach((r: any) => {
-        byId.set(r.referee_id, Math.min(byId.get(r.referee_id) ?? 4, r.level));
-      });
-      const ids = Array.from(byId.keys());
-      if (!ids.length) return [];
 
-      // 2) fetch profiles for these ids
-      const { data: profiles } = await supabase
+      const { data: lvl1Profiles, error: lvl1Err } = await supabase
         .from("profiles")
-        .select("id, email, full_name")
-        .in("id", ids);
+        .select("id, user_id, email, full_name")
+        .eq("referred_by", profile.id);
+      if (lvl1Err) throw lvl1Err;
+      const lvl1Ids = (lvl1Profiles || []).map((p: any) => p.id);
 
-      // 3) fetch investments summary for these ids
+      let lvl2Profiles: any[] = [];
+      let lvl2Ids: string[] = [];
+
+      if (lvl1Ids.length > 0) {
+        const { data, error } = await supabase
+          .from("profiles")
+          .select("id, user_id, email, full_name")
+          .in("referred_by", lvl1Ids);
+        if (error) throw error;
+        lvl2Profiles = data || [];
+        lvl2Ids = lvl2Profiles.map((p: any) => p.id);
+      }
+
+      let lvl3Profiles: any[] = [];
+      if (lvl2Ids.length > 0) {
+        const { data, error } = await supabase
+          .from("profiles")
+          .select("id, user_id, email, full_name")
+          .in("referred_by", lvl2Ids);
+        if (error) throw error;
+        lvl3Profiles = data || [];
+      }
+
+      const allProfiles = [
+        ...(lvl1Profiles || []).map((p: any) => ({ ...p, level: 1 })),
+        ...(lvl2Profiles || []).map((p: any) => ({ ...p, level: 2 })),
+        ...(lvl3Profiles || []).map((p: any) => ({ ...p, level: 3 })),
+      ];
+      const allUserIds = allProfiles.map((p: any) => p.user_id).filter(Boolean);
+      if (!allUserIds.length) return [];
+
       const { data: investments } = await supabase
         .from("investments")
         .select("user_id, amount_invested")
-        .in("user_id", ids);
+        .in("user_id", allUserIds);
 
       const invMap = new Map<string, number>();
       (investments || []).forEach((inv: any) => {
@@ -52,12 +73,11 @@ const ReferralsList = () => {
         );
       });
 
-      return (profiles || []).map((p: any) => ({
+      return allProfiles.map((p: any) => ({
         id: p.id,
         email: maskEmail(p.email),
-        name: p.full_name || "-",
-        level: byId.get(p.id) || 0,
-        invested: invMap.get(p.id) || 0,
+        level: p.level,
+        invested: invMap.get(p.user_id) || 0,
       }));
     },
     enabled: !!profile?.id,
@@ -70,6 +90,19 @@ const ReferralsList = () => {
     });
     return g;
   }, [items]);
+
+  const levelTotals = useMemo(() => {
+    return [1, 2, 3].reduce(
+      (acc, lvl) => {
+        acc[lvl] = (grouped[lvl] || []).reduce(
+          (sum, item) => sum + Number(item.invested || 0),
+          0,
+        );
+        return acc;
+      },
+      {} as Record<number, number>,
+    );
+  }, [grouped]);
 
   if (isLoading || loading)
     return (
@@ -96,29 +129,62 @@ const ReferralsList = () => {
 
       <div className="p-4 space-y-4">
         {[1, 2, 3].map((lvl) => (
-          <div key={lvl} className="rounded-2xl bg-secondary p-3">
-            <p className="text-sm text-muted-foreground mb-2">
-              Niveau {lvl} ({(grouped[lvl] || []).length})
-            </p>
-            <div className="space-y-2">
-              {(grouped[lvl] || []).map((r: any) => (
-                <div key={r.id} className="flex items-center justify-between">
-                  <div>
-                    <p className="font-bold text-foreground text-sm">
-                      {r.email}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      Investi: CFA {Number(r.invested).toLocaleString()}
-                    </p>
-                  </div>
-                </div>
-              ))}
-              {!grouped[lvl]?.length && (
-                <p className="text-xs text-muted-foreground">
-                  Aucun filleul pour ce niveau.
+          <div
+            key={lvl}
+            className="rounded-2xl bg-secondary border border-border overflow-hidden"
+          >
+            <button
+              onClick={() => setOpenLevel(openLevel === lvl ? null : lvl)}
+              className="w-full flex items-center justify-between gap-3 p-4 text-left"
+            >
+              <div>
+                <p className="text-sm font-bold text-foreground">
+                  Niveau {lvl} ({(grouped[lvl] || []).length})
                 </p>
+                <p className="text-xs text-muted-foreground">
+                  Somme investie: CFA{" "}
+                  {Number(levelTotals[lvl] || 0).toLocaleString("fr-FR")}
+                </p>
+              </div>
+              {openLevel === lvl ? (
+                <ChevronUp className="w-4 h-4 text-muted-foreground" />
+              ) : (
+                <ChevronDown className="w-4 h-4 text-muted-foreground" />
               )}
-            </div>
+            </button>
+
+            {openLevel === lvl && (
+              <div className="px-4 pb-4 space-y-2">
+                {(grouped[lvl] || []).map((r: any) => (
+                  <div
+                    key={r.id}
+                    className="grid grid-cols-[1fr_auto] gap-3 rounded-xl bg-background/60 border border-border p-3"
+                  >
+                    <div>
+                      <p className="font-bold text-foreground text-sm truncate">
+                        {r.email}
+                      </p>
+                      <p className="text-[11px] text-muted-foreground">
+                        Niveau {lvl}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-[11px] text-muted-foreground">
+                        Investi
+                      </p>
+                      <p className="font-bold text-foreground text-sm">
+                        CFA {Number(r.invested).toLocaleString("fr-FR")}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+                {!grouped[lvl]?.length && (
+                  <p className="text-xs text-muted-foreground">
+                    Aucun filleul pour ce niveau.
+                  </p>
+                )}
+              </div>
+            )}
           </div>
         ))}
       </div>
