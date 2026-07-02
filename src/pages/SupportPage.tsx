@@ -14,20 +14,8 @@ const SupportPage = () => {
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
-  const { data: settings } = useQuery({
-    queryKey: ["app_settings"],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("app_settings")
-        .select("support_whatsapp_link")
-        .limit(1)
-        .single();
-      return data;
-    },
-  });
-
-  const whatsappLink =
-    (settings as any)?.support_whatsapp_link || "https://wa.me/22900000000";
+  const telegramGroupLink = "https://t.me/+S0z1QeF2z4o4OGI8";
+  const telegramSupportLink = "https://t.me/U_Service_client_Pixelvest";
 
   const handleSubmit = async () => {
     if (!subject.trim() || !message.trim() || !user) {
@@ -95,23 +83,40 @@ const SupportPage = () => {
         </h1>
       </div>
 
-      <div className="mx-4">
+      <div className="mx-4 space-y-3">
         <a
-          href={whatsappLink}
+          href={telegramGroupLink}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-3 rounded-2xl bg-success/15 border border-success/30 p-4"
+          className="flex items-center gap-3 rounded-2xl bg-blue-600/15 border border-blue-500/30 p-4"
         >
-          <MessageCircle className="w-6 h-6 text-success" />
+          <MessageCircle className="w-6 h-6 text-blue-600" />
           <div className="flex-1">
             <p className="font-bold text-foreground text-sm">
-              Nous contacter sur WhatsApp
+              Rejoindre le groupe Telegram
             </p>
             <p className="text-muted-foreground text-xs">
-              Réponse rapide garantie
+              discutez avec la communauté
             </p>
           </div>
-          <span className="text-success font-bold text-xs">OUVRIR →</span>
+          <span className="text-blue-600 font-bold text-xs">OUVRIR →</span>
+        </a>
+        <a
+          href={telegramSupportLink}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-3 rounded-2xl bg-slate-100 border border-border p-4"
+        >
+          <MessageCircle className="w-6 h-6 text-foreground" />
+          <div className="flex-1">
+            <p className="font-bold text-foreground text-sm">
+              Service client Telegram
+            </p>
+            <p className="text-muted-foreground text-xs">
+              U_Service_client_Pixelvest
+            </p>
+          </div>
+          <span className="text-foreground font-bold text-xs">OUVRIR →</span>
         </a>
       </div>
 
