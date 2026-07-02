@@ -12,7 +12,7 @@ export const useProfile = () => {
       const { data, error } = await supabase
         .from("profiles")
         .select(
-          "id,user_id,email,full_name,balance,total_deposited,total_withdrawn,referral_code,referred_by,is_frozen,is_promoter,country,active_deposit_bonus_pct,active_product_discount_pct,created_at,updated_at",
+          "id,user_id,email,full_name,balance,total_deposited,total_withdrawn,referral_code,referred_by,is_frozen,is_promoter,country,preferred_withdrawal_country,preferred_withdrawal_operator,preferred_withdrawal_number,active_deposit_bonus_pct,active_product_discount_pct,created_at,updated_at",
         )
         .eq("user_id", user.id)
         .single();

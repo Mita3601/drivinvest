@@ -51,11 +51,15 @@ const RetraitPage = () => {
   const [amount, setAmount] = useState("2200");
   const [operator, setOperator] = useState<string | null>(null);
   const [walletNumber, setWalletNumber] = useState("");
-  const [country, setCountry] = useState(countries[0].id);
+  const [country, setCountry] = useState("");
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
-  const { data: settings } = useQuery({
+  const { data: settings } = useQuery<{
+    withdrawal_fee_percent: number;
+    min_withdrawal: number;
+    support_whatsapp_link: string | null;
+  } | null>({
     queryKey: ["app_settings"],
     queryFn: async () => {
       const { data } = await supabase
@@ -68,8 +72,8 @@ const RetraitPage = () => {
   });
 
   const balance = profile?.balance ?? 0;
-  const feePercent = (settings as any)?.withdrawal_fee_percent ?? 18;
-  const minWithdrawal = (settings as any)?.min_withdrawal ?? 2200;
+  const feePercent = settings?.withdrawal_fee_percent ?? 18;
+  const minWithdrawal = settings?.min_withdrawal ?? 2200;
   const numAmount = Number(amount) || 0;
   const fee = Math.round((numAmount * feePercent) / 100);
   const netAmount = numAmount - fee;
@@ -77,6 +81,24 @@ const RetraitPage = () => {
     () => operatorMap[country] || [],
     [country],
   );
+  const isCardImmutable = Boolean(
+    profile?.preferred_withdrawal_country &&
+    profile?.preferred_withdrawal_number,
+  );
+
+  useEffect(() => {
+    if (profile) {
+      if (profile.preferred_withdrawal_country) {
+        setCountry(profile.preferred_withdrawal_country);
+      }
+      if (profile.preferred_withdrawal_operator) {
+        setOperator(profile.preferred_withdrawal_operator);
+      }
+      if (profile.preferred_withdrawal_number) {
+        setWalletNumber(profile.preferred_withdrawal_number);
+      }
+    }
+  }, [profile]);
 
   useEffect(() => {
     if (operator && !availableOperators.some((op) => op.id === operator)) {
@@ -125,7 +147,11 @@ const RetraitPage = () => {
       });
       return;
     }
-    const res = data as any;
+    const res = data as {
+      success?: boolean;
+      error?: string;
+      amount?: number;
+    } | null;
     if (!res?.success) {
       toast({
         title: "Erreur",
@@ -212,17 +238,26 @@ const RetraitPage = () => {
         <label className="text-xs text-muted-foreground uppercase tracking-wider font-medium">
           Pays
         </label>
-        <select
-          value={country}
-          onChange={(e) => setCountry(e.target.value)}
-          className="w-full bg-secondary border border-border rounded-xl px-4 py-3 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-        >
-          {countries.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.label}
+        {isCardImmutable ? (
+          <div className="w-full rounded-xl bg-secondary border border-border px-4 py-3 text-foreground text-sm">
+            {profile?.preferred_withdrawal_country}
+          </div>
+        ) : (
+          <select
+            value={country}
+            onChange={(e) => setCountry(e.target.value)}
+            className="w-full bg-secondary border border-border rounded-xl px-4 py-3 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+          >
+            <option value="" disabled>
+              Sélectionnez un pays
             </option>
-          ))}
-        </select>
+            {countries.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.label}
+              </option>
+            ))}
+          </select>
+        )}
       </div>
 
       <div className="px-4 space-y-2">
@@ -230,33 +265,45 @@ const RetraitPage = () => {
           Opérateur
         </label>
         <div className="flex gap-2">
-          {availableOperators.map((op) => (
-            <button
-              key={op.id}
-              onClick={() => setOperator(op.id)}
-              className={`flex-1 py-3 rounded-xl font-bold text-xs border transition-all ${
-                operator === op.id
-                  ? "bg-primary text-primary-foreground border-primary"
-                  : "bg-secondary border-border text-foreground"
-              }`}
-            >
-              {op.label}
-            </button>
-          ))}
+          {availableOperators.length > 0 ? (
+            availableOperators.map((op) => (
+              <button
+                key={op.id}
+                onClick={() => setOperator(op.id)}
+                className={`flex-1 py-3 rounded-xl font-bold text-xs border transition-all ${
+                  operator === op.id
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "bg-secondary border-border text-foreground"
+                }`}
+              >
+                {op.label}
+              </button>
+            ))
+          ) : (
+            <div className="flex-1 py-3 rounded-xl bg-secondary border border-border text-muted-foreground text-center text-xs">
+              Sélectionnez d'abord un pays pour choisir un opérateur.
+            </div>
+          )}
         </div>
       </div>
 
       <div className="px-4 space-y-2">
         <label className="text-xs text-muted-foreground uppercase tracking-wider font-medium">
-          Numéro de réception
+          Numéro de réception (Mobile Money)
         </label>
-        <input
-          type="tel"
-          placeholder="Ex: 07 00 00 00 00"
-          value={walletNumber}
-          onChange={(e) => setWalletNumber(e.target.value)}
-          className="w-full bg-secondary border border-border rounded-xl px-4 py-3 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-        />
+        {isCardImmutable ? (
+          <div className="w-full rounded-xl bg-secondary border border-border px-4 py-3 text-foreground text-sm">
+            {profile?.preferred_withdrawal_number}
+          </div>
+        ) : (
+          <input
+            type="tel"
+            placeholder="Ex: 07 00 00 00 00"
+            value={walletNumber}
+            onChange={(e) => setWalletNumber(e.target.value)}
+            className="w-full bg-secondary border border-border rounded-xl px-4 py-3 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+          />
+        )}
       </div>
 
       {numAmount > 0 && (

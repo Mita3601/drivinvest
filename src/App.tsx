@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
+import { HashRouter, Route, Routes, Navigate } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
@@ -13,6 +13,7 @@ import Auth from "./pages/Auth";
 import RechargePage from "./pages/RechargePage";
 import RechargeReturn from "./pages/RechargeReturn";
 import RetraitPage from "./pages/RetraitPage";
+import LinkAccount from "./pages/LinkAccount";
 import SupportPage from "./pages/SupportPage";
 import AboutPage from "./pages/AboutPage";
 import RulesPage from "./pages/RulesPage";
@@ -59,7 +60,7 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
-      <BrowserRouter
+      <HashRouter
         future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
       >
         <AuthProvider>
@@ -74,6 +75,7 @@ const App = () => (
               <Route path="/recharge" element={<RechargePage />} />
               <Route path="/recharge/return" element={<RechargeReturn />} />
               <Route path="/retrait" element={<RetraitPage />} />
+              <Route path="/link-account" element={<LinkAccount />} />
               <Route path="/support" element={<SupportPage />} />
               <Route path="/about" element={<AboutPage />} />
               <Route path="/rules" element={<RulesPage />} />

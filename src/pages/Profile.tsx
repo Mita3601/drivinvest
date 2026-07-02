@@ -46,7 +46,7 @@ const Profile = () => {
     { label: "Historique", icon: History, path: "/retrait-history" },
     { label: "Service client", icon: Headphones, path: "/support" },
     { label: "Télécharger l'app", icon: Download, path: "/download" },
-    { label: "Lier une carte bancaire", icon: CreditCard, path: "/retrait" },
+    { label: "Lier un compte", icon: CreditCard, path: "/link-account" },
     { label: "Changer le mot de passe", icon: Lock, path: "/about" },
     { label: "GIFT", icon: Gift, path: "/bonus" },
   ];
