@@ -1,4 +1,4 @@
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Laptop } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { toast } from "@/hooks/use-toast";
@@ -46,16 +46,23 @@ const BonusQuotidien = () => {
     setLoading(false);
     const r = data as any;
     if (error || !r?.success) {
-      toast({ title: "Indisponible", description: r?.error || "Réessayez plus tard." });
+      toast({
+        title: "Indisponible",
+        description: r?.error || "Réessayez plus tard.",
+      });
       await loadStatus();
       return;
     }
-    toast({ title: `+${r.amount} FCFA`, description: "Bonus quotidien crédité." });
+    toast({
+      title: `+${r.amount} FCFA`,
+      description: "Bonus quotidien crédité.",
+    });
     await loadStatus();
     qc.invalidateQueries({ queryKey: ["profile"] });
   };
 
-  const canClaimNow = canClaim && (!nextAt || nextAt.getTime() <= now.getTime());
+  const canClaimNow =
+    canClaim && (!nextAt || nextAt.getTime() <= now.getTime());
 
   return (
     <div className="pb-24">
@@ -67,14 +74,16 @@ const BonusQuotidien = () => {
 
       <div className="flex flex-col items-center mt-4 px-6">
         <div className="w-56 h-56 rounded-full bg-navy-card border-gold-gradient flex flex-col items-center justify-center">
-          <svg viewBox="0 0 24 24" className="w-16 h-16 text-foreground mb-3" fill="currentColor">
-            <path d="M3 14 L12 6 L21 14 L17 14 L12 10 L7 14 Z M5 17 L9 17 L9 19 L5 19 Z M15 17 L19 17 L19 19 L15 19 Z" />
-          </svg>
-          <p className="font-display font-bold text-foreground text-3xl">CFA 50</p>
+          <Laptop className="w-16 h-16 text-foreground mb-3" />
+          <p className="font-display font-bold text-foreground text-3xl">
+            CFA 50
+          </p>
         </div>
 
         <div className="-mt-5 px-8 py-2 rounded-2xl bg-gradient-to-r from-rose-200 via-orange-200 to-amber-200">
-          <span className="text-background font-display font-medium">Bonus cumulé</span>
+          <span className="text-background font-display font-medium">
+            Bonus cumulé
+          </span>
         </div>
 
         <p className="text-muted-foreground text-base mt-6">
@@ -83,19 +92,26 @@ const BonusQuotidien = () => {
 
         <div className="flex items-center justify-center gap-10 mt-6">
           <div className="text-center">
-            <p className="font-display font-bold text-foreground text-3xl">{days}</p>
+            <p className="font-display font-bold text-foreground text-3xl">
+              {days}
+            </p>
             <p className="text-muted-foreground text-sm mt-1">Jours</p>
           </div>
           <div className="w-px h-12 bg-border" />
           <div className="text-center">
-            <p className="font-display font-bold text-foreground text-3xl">CFA 50</p>
-            <p className="text-muted-foreground text-sm mt-1">Bonus quotidien</p>
+            <p className="font-display font-bold text-foreground text-3xl">
+              CFA 50
+            </p>
+            <p className="text-muted-foreground text-sm mt-1">
+              Bonus quotidien
+            </p>
           </div>
         </div>
 
         {!canClaimNow && nextAt && (
           <p className="text-muted-foreground text-sm mt-4">
-            Prochain pointage dans <span className="text-foreground font-medium">{countdown()}</span>
+            Prochain pointage dans{" "}
+            <span className="text-foreground font-medium">{countdown()}</span>
           </p>
         )}
 
@@ -108,10 +124,20 @@ const BonusQuotidien = () => {
         </button>
 
         <div className="w-full mt-6 rounded-2xl bg-secondary border border-border p-5 space-y-3">
-          <h3 className="font-display font-bold text-foreground">Conseils utiles</h3>
-          <p className="text-muted-foreground text-sm">1. Récompense quotidienne : 50 FCFA créditée directement sur votre solde.</p>
-          <p className="text-muted-foreground text-sm">2. Le premier pointage est disponible 24h après la création de votre compte.</p>
-          <p className="text-muted-foreground text-sm">3. Chaque pointage suivant est disponible 24h après le précédent.</p>
+          <h3 className="font-display font-bold text-foreground">
+            Conseils utiles
+          </h3>
+          <p className="text-muted-foreground text-sm">
+            1. Récompense quotidienne : 50 FCFA créditée directement sur votre
+            solde.
+          </p>
+          <p className="text-muted-foreground text-sm">
+            2. Le premier pointage est disponible 24h après la création de votre
+            compte.
+          </p>
+          <p className="text-muted-foreground text-sm">
+            3. Chaque pointage suivant est disponible 24h après le précédent.
+          </p>
         </div>
       </div>
     </div>

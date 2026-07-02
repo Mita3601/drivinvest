@@ -26,7 +26,7 @@ const Index = () => {
   const quickActions = [
     { label: "Dépôt", icon: ArrowDownCircle, path: "/recharge" },
     { label: "Retrait", icon: ArrowUpCircle, path: "/retrait" },
-    { label: "Cadeau", icon: Gift, path: "/team" },
+    { label: "Cadeau", icon: Gift, path: "/promo" },
     { label: "Aide", icon: HelpCircle, path: "/support" },
   ];
 

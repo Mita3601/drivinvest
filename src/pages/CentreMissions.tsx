@@ -43,19 +43,11 @@ const CentreMissions = () => {
     queryKey: ["mission_lvl1_count", profile?.id],
     queryFn: async () => {
       if (!profile?.id) return 0;
-      // Count only direct referees who have at least one investment
       const { data: referees } = await supabase
         .from("profiles")
         .select("id")
         .eq("referred_by", profile.id);
-      const ids = (referees || []).map((r: any) => r.id);
-      if (!ids.length) return 0;
-      const { data: invs } = await supabase
-        .from("investments")
-        .select("user_id")
-        .in("user_id", ids);
-      const unique = new Set((invs || []).map((i: any) => i.user_id));
-      return unique.size;
+      return (referees || []).length;
     },
     enabled: !!profile?.id,
   });
