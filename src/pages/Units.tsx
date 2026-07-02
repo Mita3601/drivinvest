@@ -27,10 +27,10 @@ const Units = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("investment_types")
-        .select("*")
+        .select("id,name,price,duration,daily_return,total_return,is_frozen")
         .order("price", { ascending: true });
       if (error) throw error;
-      return data;
+      return data as Array<any>;
     },
   });
 
@@ -39,7 +39,7 @@ const Units = () => {
     queryFn: async () => {
       const { count } = await supabase
         .from("investments")
-        .select("*", { count: "exact", head: true })
+        .select("id", { count: "exact", head: true })
         .eq("status", "active");
       return count ?? 0;
     },
@@ -49,17 +49,30 @@ const Units = () => {
 
   const handleBuy = async (item: any) => {
     setLoadingId(item.id);
-    const { data, error } = await supabase.rpc("buy_investment", { p_type_id: item.id });
+    const { data, error } = await supabase.rpc("buy_investment", {
+      p_type_id: item.id,
+    });
     if (error) {
-      toast({ title: "Erreur", description: error.message, variant: "destructive" });
+      toast({
+        title: "Erreur",
+        description: error.message,
+        variant: "destructive",
+      });
     } else {
       const result = data as any;
       if (result?.success) {
-        toast({ title: "Achat réussi ! 🎉", description: `${item.name} activé.` });
+        toast({
+          title: "Achat réussi ! 🎉",
+          description: `${item.name} activé.`,
+        });
         queryClient.invalidateQueries({ queryKey: ["profile"] });
         queryClient.invalidateQueries({ queryKey: ["my_investments_count"] });
       } else {
-        toast({ title: "Solde insuffisant", description: `Il vous faut ${formatCFA(item.price)} F.`, variant: "destructive" });
+        toast({
+          title: "Solde insuffisant",
+          description: `Il vous faut ${formatCFA(item.price)} F.`,
+          variant: "destructive",
+        });
       }
     }
     setLoadingId(null);
@@ -69,18 +82,28 @@ const Units = () => {
     <div className="pb-4">
       {/* Hero */}
       <div className="relative h-44">
-        <img src={bannerImg} alt="Showroom PixelVest" className="w-full h-full object-cover" width={1600} height={640} />
+        <img
+          src={bannerImg}
+          alt="Showroom PixelVest"
+          className="w-full h-full object-cover"
+          width={1600}
+          height={640}
+        />
         <div className="absolute inset-0 bg-gradient-to-b from-transparent to-background" />
       </div>
 
       {/* Stats card */}
       <div className="mx-4 -mt-10 relative rounded-3xl bg-secondary border-gold-gradient p-4 grid grid-cols-2 gap-4 text-center">
         <div className="border-r border-border">
-          <p className="font-display font-bold text-foreground text-2xl">{myInvestments ?? 0}</p>
+          <p className="font-display font-bold text-foreground text-2xl">
+            {myInvestments ?? 0}
+          </p>
           <p className="text-muted-foreground text-xs">Mes produits</p>
         </div>
         <div>
-          <p className="font-display font-bold text-foreground text-2xl">CFA {formatCFA(totalRevenue)}</p>
+          <p className="font-display font-bold text-foreground text-2xl">
+            CFA {formatCFA(totalRevenue)}
+          </p>
           <p className="text-muted-foreground text-xs">Revenu total</p>
         </div>
       </div>
@@ -88,9 +111,14 @@ const Units = () => {
       {/* List */}
       <div className="px-4 mt-5 space-y-0 divide-y divide-border">
         {isLoading
-          ? Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-28 my-3 rounded-2xl" />)
+          ? Array.from({ length: 6 }).map((_, i) => (
+              <Skeleton key={i} className="h-28 my-3 rounded-2xl" />
+            ))
           : types?.map((item, i) => (
-              <div key={item.id} className="flex items-start gap-3 py-4">
+              <div
+                key={item.id}
+                className={`flex items-start gap-3 py-4 ${item.is_frozen ? "opacity-55" : ""}`}
+              >
                 <img
                   src={productImages[i % productImages.length]}
                   alt={item.name}
@@ -101,15 +129,26 @@ const Units = () => {
                 />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-2 mb-1">
-                    <h3 className="font-display font-bold text-foreground text-base leading-tight">{item.name}</h3>
+                    <h3 className="font-display font-bold text-foreground text-base leading-tight">
+                      {item.name}
+                    </h3>
                     <button
-                      disabled={loadingId === item.id}
+                      disabled={loadingId === item.id || item.is_frozen}
                       onClick={() => handleBuy(item)}
                       className="shrink-0 rounded-xl border border-foreground/80 bg-transparent text-foreground text-xs font-bold px-4 py-2 hover:bg-foreground hover:text-background transition-colors disabled:opacity-50"
                     >
-                      {loadingId === item.id ? "..." : "ACHETER"}
+                      {loadingId === item.id
+                        ? "..."
+                        : item.is_frozen
+                          ? "GELÉ"
+                          : "ACHETER"}
                     </button>
                   </div>
+                  {item.is_frozen && (
+                    <p className="text-[11px] text-destructive font-bold mb-1">
+                      Produit temporairement indisponible.
+                    </p>
+                  )}
                   <div className="text-muted-foreground text-xs space-y-0.5">
                     <p>Prix : CFA {formatCFA(item.price)}</p>
                     <p>Jours de revenu : {item.duration}</p>

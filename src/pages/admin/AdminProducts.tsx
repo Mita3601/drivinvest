@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
-import { Save } from "lucide-react";
+import { Save, Snowflake } from "lucide-react";
 
 const formatCFA = (n: number) => Number(n || 0).toLocaleString("fr-FR");
 
@@ -15,6 +15,7 @@ type Row = {
   total_return: number;
   duration: number;
   is_starter: boolean;
+  is_frozen: boolean;
 };
 
 const ProductRow = ({ row }: { row: Row }) => {
@@ -22,6 +23,7 @@ const ProductRow = ({ row }: { row: Row }) => {
   const [price, setPrice] = useState<string>(String(row.price));
   const [daily, setDaily] = useState<string>(String(row.daily_return));
   const [saving, setSaving] = useState(false);
+  const [toggling, setToggling] = useState(false);
 
   useEffect(() => {
     setPrice(String(row.price));
@@ -30,7 +32,9 @@ const ProductRow = ({ row }: { row: Row }) => {
 
   const dailyNum = Number(daily) || 0;
   const previewTotal = dailyNum * row.duration;
-  const dirty = Number(price) !== Number(row.price) || dailyNum !== Number(row.daily_return);
+  const dirty =
+    Number(price) !== Number(row.price) ||
+    dailyNum !== Number(row.daily_return);
 
   const save = async () => {
     const p = Number(price);
@@ -59,20 +63,52 @@ const ProductRow = ({ row }: { row: Row }) => {
     setSaving(false);
   };
 
+  const toggleFreeze = async () => {
+    setToggling(true);
+    const { data, error } = await supabase.rpc(
+      "admin_toggle_investment_type_freeze",
+      {
+        p_id: row.id,
+        p_is_frozen: !row.is_frozen,
+      },
+    );
+    if (error || !(data as any)?.success) {
+      toast({
+        title: "Erreur",
+        description: error?.message || (data as any)?.error || "Échec",
+        variant: "destructive",
+      });
+    } else {
+      toast({ title: row.is_frozen ? "Produit dégélé" : "Produit gelé" });
+      queryClient.invalidateQueries({ queryKey: ["admin_investment_types"] });
+      queryClient.invalidateQueries({ queryKey: ["investment_types"] });
+    }
+    setToggling(false);
+  };
+
   return (
     <div className="rounded-xl bg-secondary border border-border p-4 space-y-3">
       <div className="flex items-center justify-between gap-2">
         <p className="font-bold text-foreground text-sm truncate">{row.name}</p>
-        {row.is_starter && (
-          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary/15 text-primary">
-            STARTER
-          </span>
-        )}
+        <div className="flex items-center gap-2">
+          {row.is_starter && (
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary/15 text-primary">
+              STARTER
+            </span>
+          )}
+          {row.is_frozen && (
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-destructive/15 text-destructive">
+              GELÉ
+            </span>
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-2">
         <label className="block">
-          <span className="text-[10px] text-muted-foreground font-bold">Prix (F)</span>
+          <span className="text-[10px] text-muted-foreground font-bold">
+            Prix (F)
+          </span>
           <input
             type="number"
             value={price}
@@ -81,7 +117,9 @@ const ProductRow = ({ row }: { row: Row }) => {
           />
         </label>
         <label className="block">
-          <span className="text-[10px] text-muted-foreground font-bold">Revenu / jour (F)</span>
+          <span className="text-[10px] text-muted-foreground font-bold">
+            Revenu / jour (F)
+          </span>
           <input
             type="number"
             value={daily}
@@ -108,6 +146,28 @@ const ProductRow = ({ row }: { row: Row }) => {
         <Save className="w-3.5 h-3.5" />
         {saving ? "..." : "Enregistrer"}
       </button>
+
+      <button
+        onClick={toggleFreeze}
+        disabled={toggling}
+        className={`w-full font-bold text-xs py-2 rounded-lg flex items-center justify-center gap-1.5 disabled:opacity-40 ${
+          row.is_frozen
+            ? "bg-success/15 text-success"
+            : "bg-destructive/15 text-destructive"
+        }`}
+      >
+        {row.is_frozen ? (
+          <>
+            <Snowflake className="w-3.5 h-3.5" />
+            {toggling ? "..." : "Dégeler le produit"}
+          </>
+        ) : (
+          <>
+            <Snowflake className="w-3.5 h-3.5" />
+            {toggling ? "..." : "Geler le produit"}
+          </>
+        )}
+      </button>
     </div>
   );
 };
@@ -118,7 +178,9 @@ const AdminProducts = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("investment_types")
-        .select("id,name,price,daily_return,total_return,duration,is_starter")
+        .select(
+          "id,name,price,daily_return,total_return,duration,is_starter,is_frozen",
+        )
         .order("price", { ascending: true });
       if (error) throw error;
       return data as Row[];
@@ -137,8 +199,8 @@ const AdminProducts = () => {
   return (
     <div className="space-y-3">
       <p className="text-muted-foreground text-xs">
-        {data?.length || 0} produits — modifie le prix et le revenu quotidien. Le revenu total est
-        recalculé automatiquement (revenu/jour × durée).
+        {data?.length || 0} produits — modifie le prix et le revenu quotidien.
+        Le revenu total est recalculé automatiquement (revenu/jour × durée).
       </p>
       {data?.map((row) => (
         <ProductRow key={row.id} row={row} />

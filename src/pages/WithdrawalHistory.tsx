@@ -8,18 +8,23 @@ import { useState } from "react";
 
 const formatCFA = (n: number) => n.toLocaleString("fr-FR");
 
-const statusInfo: Record<string, { label: string; color: string; bg: string }> = {
-  pending: { label: "En cours", color: "text-primary", bg: "bg-primary/15" },
-  approved: { label: "Réussi", color: "text-success", bg: "bg-success/15" },
-  rejected: { label: "Refusé", color: "text-destructive", bg: "bg-destructive/15" },
-};
+const statusInfo: Record<string, { label: string; color: string; bg: string }> =
+  {
+    pending: { label: "En cours", color: "text-primary", bg: "bg-primary/15" },
+    approved: { label: "Réussi", color: "text-success", bg: "bg-success/15" },
+    rejected: {
+      label: "Refusé",
+      color: "text-destructive",
+      bg: "bg-destructive/15",
+    },
+  };
 
 const HistoryPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [params] = useSearchParams();
   const [tab, setTab] = useState<"withdrawal" | "deposit">(
-    params.get("tab") === "deposit" ? "deposit" : "withdrawal"
+    params.get("tab") === "deposit" ? "deposit" : "withdrawal",
   );
 
   const { data: txs, isLoading } = useQuery({
@@ -27,7 +32,9 @@ const HistoryPage = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("transactions")
-        .select("*")
+        .select(
+          "id,amount,status,method,wallet_number,country,net_amount,created_at",
+        )
         .eq("user_id", user!.id)
         .eq("type", tab)
         .order("created_at", { ascending: false });
@@ -57,7 +64,9 @@ const HistoryPage = () => {
             key={t.id}
             onClick={() => setTab(t.id)}
             className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-colors ${
-              tab === t.id ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"
+              tab === t.id
+                ? "bg-primary text-primary-foreground"
+                : "bg-secondary text-muted-foreground"
             }`}
           >
             {t.label}
@@ -67,29 +76,65 @@ const HistoryPage = () => {
 
       <div className="px-4 space-y-3">
         {isLoading ? (
-          Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-24 rounded-2xl" />)
+          Array.from({ length: 3 }).map((_, i) => (
+            <Skeleton key={i} className="h-24 rounded-2xl" />
+          ))
         ) : !txs?.length ? (
           <div className="rounded-2xl bg-secondary border border-border p-6 text-center">
             <p className="text-muted-foreground text-sm">Aucune transaction</p>
           </div>
         ) : (
           txs.map((tx: any) => {
-            const info = statusInfo[tx.status] || { label: tx.status, color: "text-muted-foreground", bg: "bg-secondary" };
-            const net = tx.net_amount ?? (tab === "withdrawal" ? Math.round(Number(tx.amount) * 0.85) : Number(tx.amount));
+            const info = statusInfo[tx.status] || {
+              label: tx.status,
+              color: "text-muted-foreground",
+              bg: "bg-secondary",
+            };
+            const net =
+              tx.net_amount ??
+              (tab === "withdrawal"
+                ? Math.round(Number(tx.amount) * 0.85)
+                : Number(tx.amount));
             return (
               <div key={tx.id} className="rounded-2xl bg-secondary p-4">
                 <div className="flex items-start justify-between mb-2">
                   <div>
-                    <p className="font-display font-bold text-foreground text-base">CFA {formatCFA(Number(tx.amount))}</p>
-                    <p className="text-muted-foreground text-xs mt-0.5">{tx.method?.toUpperCase() || "—"} • {new Date(tx.created_at).toLocaleString("fr-FR")}</p>
+                    <p className="font-display font-bold text-foreground text-base">
+                      CFA {formatCFA(Number(tx.amount))}
+                    </p>
+                    <p className="text-muted-foreground text-xs mt-0.5">
+                      {tx.method?.toUpperCase() || "—"} •{" "}
+                      {new Date(tx.created_at).toLocaleString("fr-FR")}
+                    </p>
                   </div>
-                  <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full ${info.bg} ${info.color}`}>{info.label}</span>
+                  <span
+                    className={`text-[11px] font-bold px-2.5 py-1 rounded-full ${info.bg} ${info.color}`}
+                  >
+                    {info.label}
+                  </span>
                 </div>
                 {tab === "withdrawal" && (
                   <div className="border-t border-border pt-2 mt-2 text-xs space-y-0.5">
-                    <div className="flex justify-between"><span className="text-muted-foreground">Net reçu</span><span className="text-foreground">CFA {formatCFA(net)}</span></div>
-                    {tx.wallet_number && <div className="flex justify-between"><span className="text-muted-foreground">Numéro</span><span className="text-foreground">{tx.wallet_number}</span></div>}
-                    {tx.country && <div className="flex justify-between"><span className="text-muted-foreground">Pays</span><span className="text-foreground">{tx.country}</span></div>}
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Net reçu</span>
+                      <span className="text-foreground">
+                        CFA {formatCFA(net)}
+                      </span>
+                    </div>
+                    {tx.wallet_number && (
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Numéro</span>
+                        <span className="text-foreground">
+                          {tx.wallet_number}
+                        </span>
+                      </div>
+                    )}
+                    {tx.country && (
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Pays</span>
+                        <span className="text-foreground">{tx.country}</span>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

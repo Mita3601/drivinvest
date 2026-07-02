@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ArrowLeft, CheckCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,19 +7,40 @@ import { useProfile } from "@/hooks/useProfile";
 import { toast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
 
-const operators = [
-  { id: "orange", label: "Orange Money" },
-  { id: "mtn", label: "MTN MoMo" },
-  { id: "moov", label: "Moov Money" },
+const countries = [
+  { id: "Cameroun", label: "Cameroun" },
+  { id: "CI", label: "CI" },
+  { id: "BF", label: "BF" },
+  { id: "Benin", label: "Benin" },
+  { id: "Senegal", label: "Senegal" },
 ];
 
-const countries = [
-  "Côte d'Ivoire",
-  "Sénégal",
-  "Bénin",
-  "Burkina Faso",
-  "Cameroun",
-];
+const operatorMap: Record<string, Array<{ id: string; label: string }>> = {
+  Cameroun: [
+    { id: "orange", label: "Orange" },
+    { id: "mtn", label: "MTN" },
+  ],
+  CI: [
+    { id: "wave", label: "Wave" },
+    { id: "moov", label: "Moov" },
+    { id: "mtn", label: "MTN" },
+    { id: "orange", label: "Orange" },
+  ],
+  BF: [
+    { id: "orange", label: "Orange" },
+    { id: "wave", label: "Wave" },
+    { id: "moov", label: "Moov" },
+  ],
+  Benin: [
+    { id: "orange", label: "Orange" },
+    { id: "mtn", label: "MTN" },
+  ],
+  Senegal: [
+    { id: "orange", label: "Orange" },
+    { id: "freemoney", label: "Freemoney" },
+    { id: "expresso", label: "Expresso" },
+  ],
+};
 
 const formatCFA = (n: number) => n.toLocaleString("fr-FR");
 
@@ -27,10 +48,10 @@ const RetraitPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { data: profile } = useProfile();
-  const [amount, setAmount] = useState("");
+  const [amount, setAmount] = useState("2200");
   const [operator, setOperator] = useState<string | null>(null);
   const [walletNumber, setWalletNumber] = useState("");
-  const [country, setCountry] = useState(countries[0]);
+  const [country, setCountry] = useState(countries[0].id);
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
@@ -39,7 +60,7 @@ const RetraitPage = () => {
     queryFn: async () => {
       const { data } = await supabase
         .from("app_settings")
-        .select("*")
+        .select("withdrawal_fee_percent,min_withdrawal,support_whatsapp_link")
         .limit(1)
         .single();
       return data;
@@ -47,13 +68,39 @@ const RetraitPage = () => {
   });
 
   const balance = profile?.balance ?? 0;
-  const feePercent = (settings as any)?.withdrawal_fee_percent ?? 15;
-  const minWithdrawal = (settings as any)?.min_withdrawal ?? 1500;
+  const feePercent = (settings as any)?.withdrawal_fee_percent ?? 18;
+  const minWithdrawal = (settings as any)?.min_withdrawal ?? 2200;
   const numAmount = Number(amount) || 0;
   const fee = Math.round((numAmount * feePercent) / 100);
   const netAmount = numAmount - fee;
+  const availableOperators = useMemo(
+    () => operatorMap[country] || [],
+    [country],
+  );
+
+  useEffect(() => {
+    if (operator && !availableOperators.some((op) => op.id === operator)) {
+      setOperator(null);
+    }
+  }, [availableOperators, operator]);
 
   const handleSubmit = async () => {
+    if (balance < minWithdrawal) {
+      toast({
+        title: "Erreur",
+        description: `Vous devez avoir au moins CFA ${formatCFA(minWithdrawal)} sur votre compte pour demander un retrait.`,
+        variant: "destructive",
+      });
+      return;
+    }
+    if (numAmount < minWithdrawal) {
+      toast({
+        title: "Erreur",
+        description: `Le montant minimum de retrait est CFA ${formatCFA(minWithdrawal)}.`,
+        variant: "destructive",
+      });
+      return;
+    }
     if (!numAmount || !operator || !walletNumber || !user || !country) {
       toast({
         title: "Erreur",
@@ -102,7 +149,8 @@ const RetraitPage = () => {
           Demande enregistrée
         </h2>
         <p className="text-muted-foreground text-sm">
-          Votre retrait sera traité sous 24h après validation.
+          Le montant du retrait est fixe à 2200 F. Votre retrait sera traité
+          sous 24h après validation.
         </p>
         <button
           onClick={() => navigate("/")}
@@ -136,6 +184,10 @@ const RetraitPage = () => {
           {formatCFA(balance)}{" "}
           <span className="text-sm text-muted-foreground">FCFA</span>
         </p>
+        <p className="text-xs text-muted-foreground mt-2">
+          Pour demander un retrait, votre compte doit afficher au moins CFA{" "}
+          {formatCFA(minWithdrawal)}.
+        </p>
       </div>
 
       <div className="px-4 space-y-2">
@@ -144,11 +196,16 @@ const RetraitPage = () => {
         </label>
         <input
           type="number"
-          placeholder={`Minimum ${formatCFA(minWithdrawal)} F`}
+          min={minWithdrawal}
+          step="1"
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
           className="w-full bg-secondary border border-border rounded-xl px-4 py-3 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary"
         />
+        <p className="text-xs text-muted-foreground">
+          Vous pouvez saisir n'importe quel montant à partir de CFA{" "}
+          {formatCFA(minWithdrawal)} F.
+        </p>
       </div>
 
       <div className="px-4 space-y-2">
@@ -161,8 +218,8 @@ const RetraitPage = () => {
           className="w-full bg-secondary border border-border rounded-xl px-4 py-3 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary"
         >
           {countries.map((c) => (
-            <option key={c} value={c}>
-              {c}
+            <option key={c.id} value={c.id}>
+              {c.label}
             </option>
           ))}
         </select>
@@ -173,7 +230,7 @@ const RetraitPage = () => {
           Opérateur
         </label>
         <div className="flex gap-2">
-          {operators.map((op) => (
+          {availableOperators.map((op) => (
             <button
               key={op.id}
               onClick={() => setOperator(op.id)}
@@ -211,6 +268,12 @@ const RetraitPage = () => {
             </span>
           </div>
           <div className="flex justify-between text-sm">
+            <span className="text-muted-foreground">Seuil de compte</span>
+            <span className="text-foreground font-semibold">
+              CFA {formatCFA(minWithdrawal)} F
+            </span>
+          </div>
+          <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Frais ({feePercent}%)</span>
             <span className="text-destructive font-semibold">
               -{formatCFA(fee)} F
@@ -228,7 +291,13 @@ const RetraitPage = () => {
       <div className="px-4">
         <button
           onClick={handleSubmit}
-          disabled={loading || !numAmount || !operator || !walletNumber}
+          disabled={
+            loading ||
+            !numAmount ||
+            numAmount < minWithdrawal ||
+            !operator ||
+            !walletNumber
+          }
           className="w-full bg-primary text-primary-foreground font-bold py-3.5 rounded-xl disabled:opacity-50 flex items-center justify-center gap-2"
         >
           {loading ? (
