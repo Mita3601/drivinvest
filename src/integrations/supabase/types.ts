@@ -72,6 +72,7 @@ export type Database = {
           duration: number
           id: string
           image_url: string | null
+          is_frozen: boolean
           is_starter: boolean
           name: string
           price: number
@@ -86,6 +87,7 @@ export type Database = {
           duration?: number
           id?: string
           image_url?: string | null
+          is_frozen?: boolean
           is_starter?: boolean
           name: string
           price: number
@@ -100,6 +102,7 @@ export type Database = {
           duration?: number
           id?: string
           image_url?: string | null
+          is_frozen?: boolean
           is_starter?: boolean
           name?: string
           price?: number
@@ -193,6 +196,9 @@ export type Database = {
           id: string
           is_frozen: boolean
           is_promoter: boolean
+          preferred_withdrawal_country: string | null
+          preferred_withdrawal_number: string | null
+          preferred_withdrawal_operator: string | null
           referral_code: string
           referred_by: string | null
           total_deposited: number
@@ -211,6 +217,9 @@ export type Database = {
           id?: string
           is_frozen?: boolean
           is_promoter?: boolean
+          preferred_withdrawal_country?: string | null
+          preferred_withdrawal_number?: string | null
+          preferred_withdrawal_operator?: string | null
           referral_code?: string
           referred_by?: string | null
           total_deposited?: number
@@ -229,6 +238,9 @@ export type Database = {
           id?: string
           is_frozen?: boolean
           is_promoter?: boolean
+          preferred_withdrawal_country?: string | null
+          preferred_withdrawal_number?: string | null
+          preferred_withdrawal_operator?: string | null
           referral_code?: string
           referred_by?: string | null
           total_deposited?: number
@@ -313,6 +325,48 @@ export type Database = {
           value?: number
         }
         Relationships: []
+      }
+      referral_rewards: {
+        Row: {
+          amount: number
+          created_at: string | null
+          id: string
+          level: number
+          referee_id: string
+          referrer_id: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string | null
+          id?: string
+          level: number
+          referee_id: string
+          referrer_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          id?: string
+          level?: number
+          referee_id?: string
+          referrer_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referral_rewards_referee_id_fkey"
+            columns: ["referee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "referral_rewards_referrer_id_fkey"
+            columns: ["referrer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       support_tickets: {
         Row: {
@@ -441,6 +495,10 @@ export type Database = {
         Returns: Json
       }
       admin_toggle_freeze: { Args: { p_user_id: string }; Returns: Json }
+      admin_toggle_investment_type_freeze: {
+        Args: { p_id: string }
+        Returns: Json
+      }
       admin_toggle_promoter: { Args: { p_user_id: string }; Returns: Json }
       admin_update_investment_type: {
         Args: { p_daily_return: number; p_id: string; p_price: number }
