@@ -1,223 +1,265 @@
+import { useEffect, useRef, useState } from "react";
 import {
+  Package,
   ArrowDownCircle,
   ArrowUpCircle,
-  Gift,
-  HelpCircle,
-  Bell,
-  ChevronRight,
+  Users,
+  UserPlus,
+  Ticket,
+  Tag,
+  Info,
+  CheckCircle2,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useProfile } from "@/hooks/useProfile";
-import { Skeleton } from "@/components/ui/skeleton";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
+import { useQueryClient } from "@tanstack/react-query";
 import bannerImg from "@/assets/pc-banner.jpg";
-import bonusImg from "@/assets/pc-vip6.jpg";
-import missionsImg from "@/assets/pc-vip5.jpg";
-import newModelImg from "@/assets/pc-vip4.jpg";
+import pc1 from "@/assets/pc-vip1.jpg";
+import pc2 from "@/assets/pc-vip2.jpg";
+import pc3 from "@/assets/pc-vip3.jpg";
+import pc4 from "@/assets/pc-vip4.jpg";
+import pc5 from "@/assets/pc-vip5.jpg";
+import pc6 from "@/assets/pc-vip6.jpg";
+import teamImg from "@/assets/pc-team.jpg";
 
-const formatCFA = (n: number) => n.toLocaleString("fr-FR");
+const slides = [
+  { src: bannerImg, label: "PixelVest" },
+  { src: pc1, label: "Fujitsu Lifebook" },
+  { src: pc2, label: "Fujitsu Celsius" },
+  { src: pc3, label: "Fujitsu Esprimo" },
+  { src: pc4, label: "Fujitsu Stylistic" },
+  { src: pc5, label: "Workstation Pro" },
+  { src: pc6, label: "Tower Suprême" },
+  { src: teamImg, label: "Notre équipe" },
+];
 
 const Index = () => {
   const navigate = useNavigate();
-  const { data: profile, isLoading } = useProfile();
+  const { data: profile } = useProfile();
+  const qc = useQueryClient();
 
-  const balance = profile?.balance ?? 0;
-  const earnings = profile?.total_deposited ?? 0;
+  // Carousel auto-scroll
+  const [index, setIndex] = useState(0);
+  const timerRef = useRef<number | null>(null);
+  useEffect(() => {
+    timerRef.current = window.setInterval(() => {
+      setIndex((i) => (i + 1) % slides.length);
+    }, 3500);
+    return () => {
+      if (timerRef.current) window.clearInterval(timerRef.current);
+    };
+  }, []);
 
-  const quickActions = [
-    { label: "Dépôt", icon: ArrowDownCircle, path: "/recharge" },
+  // Bonus quotidien
+  const [canClaim, setCanClaim] = useState(false);
+  const [claiming, setClaiming] = useState(false);
+  const [bonusAmount] = useState(50);
+
+  const loadBonus = async () => {
+    const { data, error } = await supabase.rpc("get_daily_bonus_status");
+    if (error) return;
+    const d = data as any;
+    const next = d?.next_at ? new Date(d.next_at) : null;
+    setCanClaim(!!d?.can_claim && (!next || next.getTime() <= Date.now()));
+  };
+  useEffect(() => {
+    loadBonus();
+  }, [profile?.id]);
+
+  const claimBonus = async () => {
+    if (!canClaim || claiming) return;
+    setClaiming(true);
+    const { data, error } = await supabase.rpc("claim_daily_bonus");
+    setClaiming(false);
+    const r = data as any;
+    if (error || !r?.success) {
+      toast({
+        title: "Indisponible",
+        description: r?.error || "Réessayez plus tard.",
+      });
+      loadBonus();
+      return;
+    }
+    toast({
+      title: `+${r.amount} FCFA`,
+      description: "Bonus quotidien crédité.",
+    });
+    setCanClaim(false);
+    qc.invalidateQueries({ queryKey: ["profile"] });
+  };
+
+  const actions = [
+    { label: "Mon Produit", icon: Package, path: "/my-products" },
+    { label: "Recharger", icon: ArrowDownCircle, path: "/recharge" },
     { label: "Retrait", icon: ArrowUpCircle, path: "/retrait" },
-    { label: "Cadeau", icon: Gift, path: "/promo" },
-    { label: "Aide", icon: HelpCircle, path: "/support" },
+    { label: "Mon équipe", icon: Users, path: "/team" },
+    { label: "Inviter", icon: UserPlus, path: "/team/referrals" },
+    { label: "Code Promo", icon: Ticket, path: "/promo" },
   ];
 
   return (
-    <div className="space-y-5 pb-4">
-      {/* Hero banner with logo */}
-      <div className="relative -mt-px">
-        <img
-          src={bannerImg}
-          alt="PixelVest"
-          className="w-full h-44 object-cover"
-          width={1600}
-          height={640}
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background" />
-      </div>
-
-      {/* Mon compte block */}
-      <div className="mx-4 rounded-3xl bg-secondary p-4 border-gold-gradient card-glow -mt-16 relative">
-        <h2 className="text-center font-display font-bold text-foreground text-lg mb-4">
-          Mon compte
-        </h2>
-        <div className="grid grid-cols-2 gap-3 mb-3">
-          <div className="rounded-2xl bg-navy-deep border-gold-gradient p-4">
-            {isLoading ? (
-              <Skeleton className="h-7 w-24 mb-1" />
-            ) : (
-              <p className="font-display font-bold text-foreground text-xl leading-tight">
-                CFA {formatCFA(balance)}
-              </p>
-            )}
-            <span className="text-muted-foreground text-xs">Solde</span>
-          </div>
-          <div className="rounded-2xl bg-navy-deep border-gold-gradient p-4">
-            {isLoading ? (
-              <Skeleton className="h-7 w-24 mb-1" />
-            ) : (
-              <p className="font-display font-bold text-foreground text-xl leading-tight">
-                CFA {formatCFA(earnings)}
-              </p>
-            )}
-            <span className="text-muted-foreground text-xs">
-              Revenus cumulés
-            </span>
-          </div>
-        </div>
-        <div className="grid grid-cols-2 gap-3">
-          <button
-            onClick={() => navigate("/bonus")}
-            className="relative rounded-2xl overflow-hidden h-24 group"
-          >
+    <div className="space-y-6 pb-6">
+      {/* Carousel */}
+      <div className="px-4 pt-4">
+        <div className="relative rounded-3xl overflow-hidden aspect-[16/9] bg-secondary border border-border shadow-md">
+          {slides.map((s, i) => (
             <img
-              src={bonusImg}
-              alt="Bonus quotidien"
-              className="absolute inset-0 w-full h-full object-cover"
-              loading="lazy"
-              width={1024}
-              height={1024}
+              key={i}
+              src={s.src}
+              alt={s.label}
+              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${
+                i === index ? "opacity-100" : "opacity-0"
+              }`}
+              loading={i === 0 ? "eager" : "lazy"}
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-            <span className="absolute bottom-2 left-3 font-display font-bold text-white text-sm bg-black/60 px-2 py-1 rounded-lg shadow-lg">
-              Bonus quotidien ›
+          ))}
+          <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/50 to-transparent" />
+          <div className="absolute bottom-3 left-4 right-4 flex items-end justify-between">
+            <span className="font-display font-bold text-white text-sm drop-shadow">
+              {slides[index].label}
             </span>
-          </button>
-          <button
-            onClick={() => navigate("/missions")}
-            className="relative rounded-2xl overflow-hidden h-24 group"
-          >
-            <img
-              src={missionsImg}
-              alt="Centre de missions"
-              className="absolute inset-0 w-full h-full object-cover"
-              loading="lazy"
-              width={1024}
-              height={1024}
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-            <span className="absolute bottom-2 left-3 font-display font-bold text-white text-sm bg-black/60 px-2 py-1 rounded-lg shadow-lg">
-              Centre de missions ›
-            </span>
-          </button>
-        </div>
-      </div>
-
-      {/* Notification bar — défilement infini */}
-      <div className="mx-4 rounded-2xl bg-secondary border border-border px-4 py-3 flex items-center gap-3 overflow-hidden">
-        <Bell className="w-4 h-4 text-primary shrink-0" />
-        <div className="relative flex-1 overflow-hidden">
-          <div className="flex whitespace-nowrap animate-marquee">
-            <span className="text-muted-foreground text-xs pr-12">
-              ****2540 a rechargé 35,000 • ****1531 a retiré 12,000 • ****1698 a
-              activé VIP3 • ****8821 a rechargé 50,000 • ****7732 a retiré 8,500
-              • ****4410 a activé VIP4
-            </span>
-            <span
-              className="text-muted-foreground text-xs pr-12"
-              aria-hidden="true"
-            >
-              ****2540 a rechargé 35,000 • ****1531 a retiré 12,000 • ****1698 a
-              activé VIP3 • ****8821 a rechargé 50,000 • ****7732 a retiré 8,500
-              • ****4410 a activé VIP4
-            </span>
-          </div>
-        </div>
-      </div>
-
-      <button
-        onClick={() => navigate("/units")}
-        className="mx-4 w-[calc(100%-2rem)] text-left rounded-3xl overflow-hidden relative group bg-gradient-to-br from-primary/30 via-navy-deep to-destructive/30 border-gold-gradient card-glow"
-      >
-        <div className="absolute inset-0 opacity-30 bg-[radial-gradient(circle_at_top_right,hsl(var(--primary)/0.6),transparent_60%)]" />
-        <div className="relative p-4 flex items-center gap-4">
-          <div className="shrink-0 w-14 h-14 rounded-2xl bg-navy-deep border-gold-gradient flex items-center justify-center">
-            <ChevronRight className="w-6 h-6 text-primary" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-1.5 mb-1">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-primary">
-                Catalogue produits
-              </span>
+            <div className="flex gap-1.5">
+              {slides.map((_, i) => (
+                <button
+                  key={i}
+                  aria-label={`Slide ${i + 1}`}
+                  onClick={() => setIndex(i)}
+                  className={`h-1.5 rounded-full transition-all ${
+                    i === index ? "w-5 bg-white" : "w-1.5 bg-white/50"
+                  }`}
+                />
+              ))}
             </div>
-            <h3 className="font-display font-extrabold text-foreground text-base leading-tight">
-              Découvrez les produits disponibles
-            </h3>
-            <p className="text-muted-foreground text-xs mt-1 leading-snug">
-              Consultez le catalogue et choisissez le produit qui vous convient.
-            </p>
           </div>
-          <ChevronRight className="w-5 h-5 text-primary shrink-0" />
         </div>
-      </button>
+      </div>
 
-      {/* Actions rapides */}
-      <div className="mx-4 rounded-2xl bg-secondary border border-border py-4 grid grid-cols-4 gap-2">
-        {quickActions.map((a) => {
+      {/* Quick actions grid */}
+      <div className="px-4 grid grid-cols-3 gap-3">
+        {actions.map((a) => {
           const Icon = a.icon;
           return (
             <button
               key={a.label}
               onClick={() => navigate(a.path)}
-              className="flex flex-col items-center gap-1.5"
+              className="flex flex-col items-center justify-center gap-2 rounded-2xl bg-card border border-border py-5 hover:border-primary/50 hover:shadow-md transition-all"
             >
-              <div className="w-11 h-11 rounded-full bg-navy-deep flex items-center justify-center">
-                <Icon className="w-5 h-5 text-foreground" />
-              </div>
-              <span className="text-xs text-foreground">{a.label}</span>
+              <Icon className="w-7 h-7 text-primary" strokeWidth={1.8} />
+              <span className="text-xs font-medium text-foreground text-center">
+                {a.label}
+              </span>
             </button>
           );
         })}
       </div>
 
-      {/* R&D stats */}
+      {/* Tâches quotidiennes */}
       <div className="px-4">
-        <p className="text-center text-muted-foreground text-sm mb-3">
-          Réalisations en R&D technologique et brevets
-        </p>
-        <div className="grid grid-cols-4 gap-2 text-center">
-          {[
-            { value: "5", label: "Pays" },
-            { value: "11,000+", label: "Ingénieurs R&D" },
-            { value: "12", label: "Domaines" },
-            { value: "9300+", label: "Brevets" },
-          ].map((s) => (
-            <div key={s.label}>
-              <p className="font-display font-bold text-primary text-lg">
-                {s.value}
-              </p>
-              <p className="text-muted-foreground text-[10px] leading-tight">
-                {s.label}
-              </p>
+        <div className="flex items-center gap-2 mb-2">
+          <Tag className="w-4 h-4 text-primary" />
+          <h2 className="font-display font-bold text-foreground text-sm tracking-wide">
+            TÂCHES QUOTIDIENNES
+          </h2>
+        </div>
+        <div className="rounded-2xl bg-card border border-border p-4 flex items-center gap-3">
+          <div className="w-11 h-11 rounded-xl bg-success/10 flex items-center justify-center shrink-0">
+            <CheckCircle2 className="w-6 h-6 text-success" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="font-medium text-foreground text-sm">
+              Tâches de connexion quotidienne
+            </p>
+            <div className="flex items-baseline gap-2 mt-0.5">
+              <span className="text-xs text-muted-foreground">1/1</span>
+              <span className="text-success font-display font-bold text-base">
+                {bonusAmount.toFixed(2)} <span className="text-[10px]">FCFA</span>
+              </span>
             </div>
-          ))}
+          </div>
+          <button
+            onClick={claimBonus}
+            disabled={!canClaim || claiming}
+            className="px-4 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-medium disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed transition-colors"
+          >
+            {claiming ? "..." : canClaim ? "Recevoir" : "Reçu"}
+          </button>
         </div>
       </div>
 
-      {/* Featured */}
-      <div className="mx-4 relative rounded-3xl overflow-hidden h-40">
-        <img
-          src={newModelImg}
-          alt="Nouveaux modèles"
-          className="absolute inset-0 w-full h-full object-cover"
-          loading="lazy"
-          width={1024}
-          height={1024}
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent flex items-end p-4">
-          <h3 className="font-display font-extrabold text-foreground text-2xl">
-            Nouvelles machines
-            <br />
-            PixelVest
-          </h3>
+      {/* Information Fujitsu */}
+      <div className="px-4">
+        <div className="flex items-center gap-2 mb-2">
+          <Info className="w-4 h-4 text-primary" />
+          <h2 className="font-display font-bold text-foreground text-sm tracking-wide">
+            INFORMATION
+          </h2>
+        </div>
+        <div className="space-y-3">
+          <article className="rounded-2xl bg-card border border-border overflow-hidden">
+            <div className="flex gap-3 p-3">
+              <img
+                src={pc2}
+                alt="Fujitsu"
+                className="w-24 h-24 rounded-xl object-cover shrink-0"
+                loading="lazy"
+              />
+              <div className="min-w-0">
+                <h3 className="font-display font-bold text-foreground text-sm mb-1">
+                  Fujitsu — Leader mondial
+                </h3>
+                <p className="text-muted-foreground text-xs leading-snug line-clamp-4">
+                  Fujitsu Limited est une multinationale japonaise fondée en
+                  1935, l'un des plus grands fabricants mondiaux d'ordinateurs,
+                  de serveurs et de solutions informatiques d'entreprise.
+                </p>
+              </div>
+            </div>
+          </article>
+
+          <article className="rounded-2xl bg-card border border-border overflow-hidden">
+            <div className="flex gap-3 p-3">
+              <img
+                src={pc4}
+                alt="À propos Fujitsu"
+                className="w-24 h-24 rounded-xl object-cover shrink-0"
+                loading="lazy"
+              />
+              <div className="min-w-0">
+                <h3 className="font-display font-bold text-foreground text-sm mb-1">
+                  À propos
+                </h3>
+                <p className="text-muted-foreground text-xs leading-snug line-clamp-4">
+                  Présent dans plus de 100 pays avec plus de 124 000
+                  collaborateurs, Fujitsu conçoit des ordinateurs Lifebook,
+                  Celsius et Esprimo réputés pour leur fiabilité et leur
+                  innovation au service des professionnels.
+                </p>
+              </div>
+            </div>
+          </article>
+
+          <article className="rounded-2xl bg-card border border-border overflow-hidden">
+            <div className="flex gap-3 p-3">
+              <img
+                src={pc5}
+                alt="Innovation Fujitsu"
+                className="w-24 h-24 rounded-xl object-cover shrink-0"
+                loading="lazy"
+              />
+              <div className="min-w-0">
+                <h3 className="font-display font-bold text-foreground text-sm mb-1">
+                  Innovation & R&D
+                </h3>
+                <p className="text-muted-foreground text-xs leading-snug line-clamp-4">
+                  Fujitsu investit massivement dans l'intelligence artificielle,
+                  le supercalculateur Fugaku et les technologies quantiques,
+                  faisant de la marque un pilier de la tech mondiale.
+                </p>
+              </div>
+            </div>
+          </article>
         </div>
       </div>
     </div>
