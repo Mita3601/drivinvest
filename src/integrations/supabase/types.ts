@@ -67,7 +67,9 @@ export type Database = {
       }
       investment_types: {
         Row: {
+          category: string
           created_at: string
+          cycle_days: number
           daily_return: number
           duration: number
           id: string
@@ -79,10 +81,13 @@ export type Database = {
           referral_base_price: number | null
           stock_limit: number | null
           tag: string | null
+          total_cycles: number | null
           total_return: number
         }
         Insert: {
+          category?: string
           created_at?: string
+          cycle_days?: number
           daily_return: number
           duration?: number
           id?: string
@@ -94,10 +99,13 @@ export type Database = {
           referral_base_price?: number | null
           stock_limit?: number | null
           tag?: string | null
+          total_cycles?: number | null
           total_return: number
         }
         Update: {
+          category?: string
           created_at?: string
+          cycle_days?: number
           daily_return?: number
           duration?: number
           id?: string
@@ -109,6 +117,7 @@ export type Database = {
           referral_base_price?: number | null
           stock_limit?: number | null
           tag?: string | null
+          total_cycles?: number | null
           total_return?: number
         }
         Relationships: []
