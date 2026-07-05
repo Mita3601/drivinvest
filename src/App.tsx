@@ -86,6 +86,7 @@ const App = () => (
               <Route path="/missions" element={<CentreMissions />} />
               <Route path="/my-products" element={<MyProducts />} />
               <Route path="/promo" element={<PromoCode />} />
+              <Route path="/invite" element={<InvitePage />} />
             </Route>
             <Route
               path="/admin"
