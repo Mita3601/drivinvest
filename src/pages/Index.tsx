@@ -95,7 +95,7 @@ const Index = () => {
     { label: "Recharger", icon: ArrowDownCircle, path: "/recharge" },
     { label: "Retrait", icon: ArrowUpCircle, path: "/retrait" },
     { label: "Mon équipe", icon: Users, path: "/team" },
-    { label: "Inviter", icon: UserPlus, path: "/team/referrals" },
+    { label: "Inviter", icon: UserPlus, path: "/invite" },
     { label: "Code Promo", icon: Ticket, path: "/promo" },
   ];
 
