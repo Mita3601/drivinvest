@@ -1,290 +1,164 @@
-import { toast } from "@/hooks/use-toast";
+import { Flame, Tag, ArrowRight } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { useProfile } from "@/hooks/useProfile";
-import { Skeleton } from "@/components/ui/skeleton";
+import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
-import { useNavigate } from "react-router-dom";
-import teamHero from "@/assets/pc-team.jpg";
-import pcSilver from "@/assets/pc-vip1.jpg";
-import pcGold from "@/assets/pc-vip3.jpg";
+import { Skeleton } from "@/components/ui/skeleton";
+
+const LEVEL_LABELS = [
+  { key: 1, label: "A Niveau", pct: 5 },
+  { key: 2, label: "B Niveau", pct: 2 },
+  { key: 3, label: "C Niveau", pct: 1 },
+];
 
 const Team = () => {
-  const { data: profile, isLoading } = useProfile();
+  const navigate = useNavigate();
   const { user } = useAuth();
-  const refCode = profile?.referral_code || "";
-  const referralLink = `${window.location.origin}/auth?ref=${refCode}`;
+  const { data: profile, isLoading } = useProfile();
 
   const { data: stats } = useQuery({
-    queryKey: ["referral_stats", user?.id],
+    queryKey: ["team_stats_v2", user?.id],
     queryFn: async () => {
       if (!profile?.id)
         return {
-          l1: 0,
-          l2: 0,
-          l3: 0,
-          l1_invested: 0,
-          l2_invested: 0,
-          l3_invested: 0,
-          l1_reward: 0,
-          l2_reward: 0,
-          l3_reward: 0,
-          total_reward: 0,
+          totalRevenue: 0,
+          teamSize: 0,
+          official: 0,
+          levels: { 1: { size: 0, rev: 0 }, 2: { size: 0, rev: 0 }, 3: { size: 0, rev: 0 } },
         };
 
-      const { data: lvl1Profiles, error: lvl1Err } = await supabase
-        .from("profiles")
-        .select("id,user_id")
-        .eq("referred_by", profile.id);
-      if (lvl1Err) throw lvl1Err;
-      const lvl1Ids = (lvl1Profiles || []).map((p: any) => p.id);
+      const { data: lvl1 } = await supabase
+        .from("profiles").select("id,user_id").eq("referred_by", profile.id);
+      const ids1 = (lvl1 || []).map((p) => p.id);
 
-      let lvl2Profiles: any[] = [];
-      let lvl2Ids: string[] = [];
-      if (lvl1Ids.length > 0) {
-        const { data, error } = await supabase
-          .from("profiles")
-          .select("id,user_id")
-          .in("referred_by", lvl1Ids);
-        if (error) throw error;
-        lvl2Profiles = data || [];
-        lvl2Ids = lvl2Profiles.map((p: any) => p.id);
+      let lvl2: any[] = [];
+      if (ids1.length) {
+        const { data } = await supabase
+          .from("profiles").select("id,user_id").in("referred_by", ids1);
+        lvl2 = data || [];
       }
+      const ids2 = lvl2.map((p: any) => p.id);
 
-      let lvl3Profiles: any[] = [];
-      if (lvl2Ids.length > 0) {
-        const { data, error } = await supabase
-          .from("profiles")
-          .select("id,user_id")
-          .in("referred_by", lvl2Ids);
-        if (error) throw error;
-        lvl3Profiles = data || [];
-      }
-
-      const allProfileUserIds = [
-        ...lvl1Profiles.map((p: any) => p.user_id),
-        ...lvl2Profiles.map((p: any) => p.user_id),
-        ...lvl3Profiles.map((p: any) => p.user_id),
-      ].filter(Boolean);
-
-      const investedMap = new Map<string, number>();
-      if (allProfileUserIds.length > 0) {
-        const { data: investments } = await supabase
-          .from("investments")
-          .select("user_id, amount_invested")
-          .in("user_id", allProfileUserIds);
-
-        (investments || []).forEach((inv: any) => {
-          investedMap.set(
-            inv.user_id,
-            (investedMap.get(inv.user_id) || 0) +
-              Number(inv.amount_invested || 0),
-          );
-        });
+      let lvl3: any[] = [];
+      if (ids2.length) {
+        const { data } = await supabase
+          .from("profiles").select("id,user_id").in("referred_by", ids2);
+        lvl3 = data || [];
       }
 
       const { data: rewards } = await supabase
         .from("referral_rewards")
-        .select("referee_id, level, amount")
+        .select("level, amount, referee_id")
         .eq("referrer_id", profile.id);
 
-      const lvl1Referees = new Set<string>();
-      const lvl2Referees = new Set<string>();
-      const lvl3Referees = new Set<string>();
-      let l1_reward = 0,
-        l2_reward = 0,
-        l3_reward = 0;
-
-      if (rewards) {
-        rewards.forEach((r: any) => {
-          if (r.level === 1) {
-            lvl1Referees.add(r.referee_id);
-            l1_reward += r.amount;
-          } else if (r.level === 2) {
-            lvl2Referees.add(r.referee_id);
-            l2_reward += r.amount;
-          } else if (r.level === 3) {
-            lvl3Referees.add(r.referee_id);
-            l3_reward += r.amount;
-          }
-        });
-      }
-
-      return {
-        l1: lvl1Ids.length || lvl1Referees.size,
-        l2: lvl2Profiles.length || lvl2Referees.size,
-        l3: lvl3Profiles.length || lvl3Referees.size,
-        l1_invested: lvl1Profiles.reduce(
-          (sum, p: any) => sum + (investedMap.get(p.user_id) || 0),
-          0,
-        ),
-        l2_invested: lvl2Profiles.reduce(
-          (sum, p: any) => sum + (investedMap.get(p.user_id) || 0),
-          0,
-        ),
-        l3_invested: lvl3Profiles.reduce(
-          (sum, p: any) => sum + (investedMap.get(p.user_id) || 0),
-          0,
-        ),
-        l1_reward,
-        l2_reward,
-        l3_reward,
-        total_reward: l1_reward + l2_reward + l3_reward,
+      const levelStats: Record<number, { size: number; rev: number }> = {
+        1: { size: (lvl1 || []).length, rev: 0 },
+        2: { size: lvl2.length, rev: 0 },
+        3: { size: lvl3.length, rev: 0 },
       };
+      const officialSet = new Set<string>();
+      (rewards || []).forEach((r: any) => {
+        levelStats[r.level].rev += Number(r.amount || 0);
+        officialSet.add(r.referee_id);
+      });
+
+      const totalRevenue =
+        levelStats[1].rev + levelStats[2].rev + levelStats[3].rev;
+      const teamSize = levelStats[1].size + levelStats[2].size + levelStats[3].size;
+
+      return { totalRevenue, teamSize, official: officialSet.size, levels: levelStats };
     },
     enabled: !!profile?.id,
   });
 
-  const copy = (text: string, label: string) => {
-    navigator.clipboard.writeText(text);
-    toast({ title: `${label} copié !` });
-  };
-
-  const totalPersons = (stats?.l1 ?? 0) + (stats?.l2 ?? 0) + (stats?.l3 ?? 0);
-  const navigate = useNavigate();
+  if (isLoading) {
+    return (
+      <div className="p-4 space-y-4">
+        <Skeleton className="h-24 rounded-2xl" />
+        <Skeleton className="h-14 rounded-2xl" />
+        {[1, 2, 3].map((i) => <Skeleton key={i} className="h-32 rounded-2xl" />)}
+      </div>
+    );
+  }
 
   return (
-    <div className="pb-4">
-      {/* Hero */}
-      <div className="relative h-44">
-        <img
-          src={teamHero}
-          alt="Equipe"
-          className="w-full h-full object-cover"
-          width={1280}
-          height={640}
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-background" />
+    <div className="pb-24 px-4 pt-4 space-y-4">
+      {/* Top summary */}
+      <div className="grid grid-cols-2 gap-4 py-3">
+        <div>
+          <div className="flex items-center gap-2 text-foreground/80">
+            <Tag className="w-4 h-4 text-primary" strokeWidth={2.2} />
+            <span className="text-[13px] font-bold uppercase tracking-wide">Total de revenu</span>
+          </div>
+          <p className="mt-2 font-display font-extrabold text-primary text-3xl">
+            {(stats?.totalRevenue ?? 0).toLocaleString("fr-FR")}
+            <span className="ml-1 text-[11px] font-bold text-muted-foreground align-top">FCFA</span>
+          </p>
+        </div>
+        <div>
+          <div className="flex items-center gap-2 text-foreground/80">
+            <Tag className="w-4 h-4 text-primary" strokeWidth={2.2} />
+            <span className="text-[13px] font-bold uppercase tracking-wide">Taille l'équipe</span>
+          </div>
+          <p className="mt-2 font-display font-extrabold text-primary text-3xl">
+            {stats?.teamSize ?? 0}
+          </p>
+        </div>
       </div>
 
-      <div className="px-4 -mt-4 space-y-5">
-        {/* Code */}
-        <div className="rounded-2xl bg-secondary p-4">
-          <p className="text-muted-foreground text-sm mb-1">
-            Code d'invitation
-          </p>
-          <div className="flex items-center justify-between gap-2">
-            {isLoading ? (
-              <Skeleton className="h-7 w-32" />
-            ) : (
-              <p className="font-display font-bold text-foreground text-2xl">
-                {refCode}
-              </p>
-            )}
-            <button
-              onClick={() => copy(refCode, "Code")}
-              className="rounded-xl border border-foreground/80 px-5 py-2 text-xs font-bold text-foreground hover:bg-foreground hover:text-background transition-colors"
-            >
-              COPIER
-            </button>
-          </div>
-          <div className="h-px bg-border my-4" />
-          <p className="text-muted-foreground text-sm mb-1">
-            Lien d'invitation
-          </p>
-          <div className="flex items-center justify-between gap-2">
-            <p className="text-muted-foreground text-xs truncate">
-              {referralLink}
-            </p>
-            <button
-              onClick={() => copy(referralLink, "Lien")}
-              className="shrink-0 rounded-xl border border-foreground/80 px-5 py-2 text-xs font-bold text-foreground hover:bg-foreground hover:text-background transition-colors"
-            >
-              COPIER
-            </button>
-          </div>
-        </div>
+      {/* Official members bar */}
+      <div className="flex items-center justify-between bg-secondary/60 rounded-2xl px-4 py-4 border border-border">
+        <span className="text-[13px] font-bold uppercase tracking-wide text-foreground">
+          Nombre total de membres officiels
+        </span>
+        <span className="font-display font-extrabold text-primary text-xl">
+          {stats?.official ?? 0}
+        </span>
+      </div>
 
-        {/* Levels */}
-        <div className="rounded-2xl bg-secondary border-gold-gradient p-4 space-y-3">
-          {[
-            {
-              lv: "LV1",
-              pct: "20%",
-              people: stats?.l1 ?? 0,
-              reward: stats?.l1_reward ?? 0,
-            },
-            {
-              lv: "LV2",
-              pct: "5%",
-              people: stats?.l2 ?? 0,
-              reward: stats?.l2_reward ?? 0,
-            },
-            {
-              lv: "LV3",
-              pct: "1%",
-              people: stats?.l3 ?? 0,
-              reward: stats?.l3_reward ?? 0,
-            },
-          ].map((row) => (
-            <div key={row.lv} className="grid grid-cols-3 items-center gap-2">
-              <div>
-                <span className="font-display font-bold text-foreground text-2xl">
-                  {row.lv}
+      {/* Level cards */}
+      {LEVEL_LABELS.map((lvl) => {
+        const s = stats?.levels[lvl.key] ?? { size: 0, rev: 0 };
+        return (
+          <div
+            key={lvl.key}
+            className="rounded-2xl border border-border bg-card p-4 shadow-sm"
+          >
+            <div className="grid grid-cols-2 gap-3">
+              <div className="rounded-xl bg-secondary/70 py-4 text-center">
+                <p className="text-xs text-muted-foreground">Taille</p>
+                <p className="font-display font-extrabold text-foreground text-xl mt-1">
+                  {s.size}
+                </p>
+              </div>
+              <div className="rounded-xl bg-secondary/70 py-4 text-center">
+                <p className="text-xs text-muted-foreground">Revenus</p>
+                <p className="font-display font-extrabold text-primary text-xl mt-1">
+                  {s.rev.toLocaleString("fr-FR")}
+                  <span className="ml-1 text-[10px] text-muted-foreground align-top">FCFA</span>
+                </p>
+              </div>
+            </div>
+            <div className="my-4 border-t border-dashed border-border" />
+            <button
+              onClick={() => navigate("/team/referrals")}
+              className="w-full flex items-center justify-between"
+            >
+              <div className="flex items-center gap-2">
+                <Flame className="w-6 h-6 text-primary" fill="currentColor" />
+                <span className="font-display font-bold text-foreground text-lg">
+                  {lvl.label}
                 </span>
-                <p className="text-primary text-sm">
-                  {row.pct}{" "}
-                  <span className="text-muted-foreground text-[10px]">
-                    Commission
-                  </span>
-                </p>
+                <span className="text-xs text-muted-foreground ml-1">
+                  · {lvl.pct}%
+                </span>
               </div>
-              <div className="text-center">
-                <p className="font-display font-bold text-foreground">
-                  {row.people}
-                </p>
-                <p className="text-muted-foreground text-xs">Personnes</p>
-              </div>
-              <div className="text-right">
-                <p className="font-display font-bold text-foreground">
-                  CFA {row.reward.toLocaleString()}
-                </p>
-                <p className="text-muted-foreground text-xs">Recompense</p>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Two stat cards */}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="rounded-2xl bg-secondary border-gold-gradient p-4 relative overflow-hidden">
-            <img
-              src={pcSilver}
-              alt=""
-              className="w-full h-16 object-contain"
-              loading="lazy"
-              width={1024}
-              height={1024}
-            />
-            <p className="font-display font-bold text-foreground text-3xl mt-1">
-              {totalPersons}
-            </p>
-            <p className="text-muted-foreground text-xs">Total personnes</p>
-            <div className="mt-3">
-              <button
-                onClick={() => navigate("/team/referrals")}
-                className="w-full rounded-xl bg-primary text-primary-foreground font-bold py-2 text-sm"
-              >
-                Voir la liste des filleuls
-              </button>
-            </div>
+              <ArrowRight className="w-5 h-5 text-foreground" />
+            </button>
           </div>
-          <div className="rounded-2xl bg-secondary border-gold-gradient p-4 relative overflow-hidden">
-            <img
-              src={pcGold}
-              alt=""
-              className="w-full h-16 object-contain"
-              loading="lazy"
-              width={1024}
-              height={1024}
-            />
-            <p className="font-display font-bold text-foreground text-3xl mt-1">
-              CFA {(stats?.total_reward ?? 0).toLocaleString()}
-            </p>
-            <p className="text-muted-foreground text-xs">Total recompenses</p>
-          </div>
-        </div>
-      </div>
+        );
+      })}
     </div>
   );
 };
