@@ -33,6 +33,7 @@ import AdminAntifraud from "./pages/admin/AdminAntifraud";
 import AdminInvestments from "./pages/admin/AdminInvestments";
 import AdminPromoCodes from "./pages/admin/AdminPromoCodes";
 import PromoCode from "./pages/PromoCode";
+import InvitePage from "./pages/InvitePage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -85,6 +86,7 @@ const App = () => (
               <Route path="/missions" element={<CentreMissions />} />
               <Route path="/my-products" element={<MyProducts />} />
               <Route path="/promo" element={<PromoCode />} />
+              <Route path="/invite" element={<InvitePage />} />
             </Route>
             <Route
               path="/admin"

@@ -1,25 +1,19 @@
 import {
-  ArrowDownCircle,
-  ArrowUpCircle,
-  History,
-  Info,
-  FileText,
-  Headphones,
-  Download,
-  CreditCard,
-  Lock,
-  Gift,
+  ChevronRight,
+  Users,
   Package,
-  Ticket,
+  Gift,
+  UserPlus,
+  Smartphone,
+  Settings,
+  Download,
+  User as UserIcon,
 } from "lucide-react";
 import { useProfile } from "@/hooks/useProfile";
 import { useAuth } from "@/hooks/useAuth";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useNavigate } from "react-router-dom";
 import { useAdmin } from "@/hooks/useAdmin";
-import pcHero from "@/assets/pc-vip2.jpg";
-
-const formatCFA = (n: number) => n.toLocaleString("fr-FR");
 
 const Profile = () => {
   const { user, signOut } = useAuth();
@@ -29,114 +23,77 @@ const Profile = () => {
 
   const displayName =
     profile?.full_name || user?.email?.split("@")[0] || "Utilisateur";
-  const balance = profile?.balance ?? 0;
-  const earnings = profile?.total_deposited ?? 0;
 
-  const topActions = [
-    { label: "Recharger", icon: ArrowDownCircle, path: "/recharge" },
-    { label: "Retirer", icon: ArrowUpCircle, path: "/retrait" },
-    { label: "Historique", icon: History, path: "/retrait-history" },
-  ];
+  // VIP tier from total invested / balance thresholds (simple derivation)
+  const total = Number(profile?.total_deposited ?? 0);
+  const currentVip =
+    total >= 500000 ? 5 : total >= 100000 ? 4 : total >= 50000 ? 3 : total >= 20000 ? 2 : total >= 5000 ? 1 : 0;
+  const nextVip = currentVip + 1;
 
-  const shortcuts = [
-    { label: "Mes produits", icon: Package, path: "/my-products" },
-    { label: "Code promo", icon: Ticket, path: "/promo" },
-    { label: "À propos", icon: Info, path: "/about" },
-    { label: "Réglementation", icon: FileText, path: "/rules" },
-    { label: "Historique", icon: History, path: "/retrait-history" },
-    { label: "Service client", icon: Headphones, path: "/support" },
-    { label: "Télécharger l'app", icon: Download, path: "/download" },
-    { label: "Lier un compte", icon: CreditCard, path: "/link-account" },
-    { label: "Changer le mot de passe", icon: Lock, path: "/about" },
-    { label: "GIFT", icon: Gift, path: "/bonus" },
+  const menu = [
+    { label: "Mon équipe", icon: Users, path: "/team" },
+    { label: "Mon Produit", icon: Package, path: "/my-products" },
+    { label: "Échangeur Récompense", icon: Gift, path: "/promo" },
+    { label: "Invitateur Des Amis", icon: UserPlus, path: "/invite" },
+    { label: "Argent Mobile", icon: Smartphone, path: "/link-account" },
+    { label: "Paramètres", icon: Settings, path: "/about" },
+    { label: "Téléchargement Application", icon: Download, path: "/download" },
   ];
 
   return (
-    <div className="pb-24">
-      {/* Hero with tech background */}
-      <div className="relative h-64">
-        <img
-          src={pcHero}
-          alt=""
-          className="absolute inset-0 w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/60 to-background" />
-        <div className="relative z-10 px-5 pt-6 flex justify-between items-start">
-          <div>
-            <h1 className="font-display font-extrabold text-foreground text-4xl">
-              Bonjour,
-            </h1>
-            {isLoading ? (
-              <Skeleton className="h-6 w-40 mt-2" />
-            ) : (
-              <p className="text-muted-foreground text-xl mt-1">
-                {displayName}
-              </p>
-            )}
+    <div className="pb-24 min-h-screen bg-background">
+      {/* Profile card */}
+      <div className="mx-4 mt-5 rounded-2xl bg-gradient-to-br from-primary/10 via-secondary to-primary/5 border border-primary/20 p-5">
+        <div className="flex items-start gap-4">
+          <div className="w-16 h-16 rounded-full bg-background border-4 border-primary/30 flex items-center justify-center overflow-hidden shrink-0">
+            <UserIcon className="w-8 h-8 text-muted-foreground" />
           </div>
+          <div className="flex-1 min-w-0">
+            {isLoading ? (
+              <Skeleton className="h-6 w-32" />
+            ) : (
+              <p className="font-display font-bold text-foreground text-lg truncate">{displayName}</p>
+            )}
+            <div className="flex items-center gap-2 mt-2">
+              <div className="inline-flex items-center gap-1 bg-primary text-white text-[11px] font-bold px-2.5 py-1 rounded-md">
+                VIP{currentVip}
+              </div>
+              <span className="text-primary text-sm">
+                Suivant VIP: <span className="font-bold">VIP{nextVip}</span>
+              </span>
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center gap-3 mt-4">
+          <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-white font-display font-extrabold text-sm shrink-0">
+            VIP{nextVip}
+          </div>
+          <p className="text-primary text-sm">
+            Louez n'importe quel produit et débloquez VIP{nextVip}
+          </p>
         </div>
       </div>
 
-      {/* Top actions */}
-      <div className="grid grid-cols-3 gap-2 px-4 -mt-6 relative z-10">
-        {topActions.map((a) => {
-          const Icon = a.icon;
+      {/* Menu list */}
+      <div className="mx-4 mt-4 space-y-2.5">
+        {menu.map((m) => {
+          const Icon = m.icon;
           return (
             <button
-              key={a.label}
-              onClick={() => navigate(a.path)}
-              className="flex flex-col items-center gap-2 py-3"
+              key={m.label}
+              onClick={() => navigate(m.path)}
+              className="w-full flex items-center gap-3 bg-card border border-border rounded-xl px-4 py-4 hover:bg-secondary/60 transition-colors"
             >
-              <Icon className="w-9 h-9 text-foreground" strokeWidth={1.4} />
-              <span className="text-sm text-foreground">{a.label}</span>
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Balance cards */}
-      <div className="grid grid-cols-2 gap-3 px-4 mt-4">
-        {[
-          { label: "Solde", value: balance },
-          { label: "Revenus cumulés", value: earnings },
-        ].map((c) => (
-          <div
-            key={c.label}
-            className="rounded-2xl bg-navy-deep border-gold-gradient p-5"
-          >
-            {isLoading ? (
-              <Skeleton className="h-7 w-24 mb-2" />
-            ) : (
-              <p className="font-display font-bold text-foreground text-2xl leading-tight">
-                CFA {formatCFA(c.value)}
-              </p>
-            )}
-            <p className="text-muted-foreground text-sm mt-1">{c.label}</p>
-          </div>
-        ))}
-      </div>
-
-      {/* Shortcuts grid */}
-      <div className="grid grid-cols-4 gap-y-6 gap-x-2 px-4 mt-6">
-        {shortcuts.map((s) => {
-          const Icon = s.icon;
-          return (
-            <button
-              key={s.label}
-              onClick={() => navigate(s.path)}
-              className="flex flex-col items-center gap-2 text-center"
-            >
-              <Icon className="w-8 h-8 text-foreground" strokeWidth={1.4} />
-              <span className="text-[11px] text-foreground leading-tight">
-                {s.label}
-              </span>
+              <Icon className="w-5 h-5 text-primary shrink-0" strokeWidth={2} />
+              <span className="flex-1 text-left text-foreground text-[15px]">{m.label}</span>
+              <ChevronRight className="w-5 h-5 text-muted-foreground" />
             </button>
           );
         })}
       </div>
 
       {isAdmin && (
-        <div className="px-4 mt-6">
+        <div className="px-4 mt-4">
           <button
             onClick={() => navigate("/admin")}
             className="w-full bg-primary/10 border border-primary/30 text-primary font-bold py-3 rounded-2xl"
@@ -146,7 +103,7 @@ const Profile = () => {
         </div>
       )}
 
-      <div className="px-4 mt-6">
+      <div className="px-4 mt-4">
         <button
           onClick={async () => {
             await signOut();
