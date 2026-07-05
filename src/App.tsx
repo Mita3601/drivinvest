@@ -33,6 +33,7 @@ import AdminAntifraud from "./pages/admin/AdminAntifraud";
 import AdminInvestments from "./pages/admin/AdminInvestments";
 import AdminPromoCodes from "./pages/admin/AdminPromoCodes";
 import PromoCode from "./pages/PromoCode";
+import InvitePage from "./pages/InvitePage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
