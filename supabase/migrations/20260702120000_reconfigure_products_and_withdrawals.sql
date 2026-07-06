@@ -42,14 +42,7 @@ UPDATE public.app_settings
 SET min_withdrawal = 2200,
     withdrawal_fee_percent = 18;
 
-ALTER TABLE public.profiles ALTER COLUMN balance SET DEFAULT 1500;
-
-UPDATE public.profiles
-SET balance = 1500
-WHERE balance = 0
-  AND total_deposited = 0
-  AND total_withdrawn = 0
-  AND created_at >= now() - interval '7 days';
+ALTER TABLE public.profiles ALTER COLUMN balance SET DEFAULT 0;
 
 GRANT EXECUTE ON FUNCTION public.has_role(uuid, app_role) TO authenticated;
 
@@ -73,10 +66,23 @@ BEGIN
     NEW.id,
     NEW.email,
     COALESCE(NEW.raw_user_meta_data ->> 'full_name', split_part(NEW.email, '@', 1)),
-    1500,
+    0,
     referrer_id
   );
   RETURN NEW;
+END;
+$function$;
+
+CREATE OR REPLACE FUNCTION public.apply_referral_purchase_bonus(p_user_id uuid, p_base_price numeric)
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path TO 'public'
+AS $function$
+BEGIN
+  -- Purchase referral bonuses are disabled by business rule.
+  -- A referral must never grant an investment-related benefit to the referrer.
+  RETURN;
 END;
 $function$;
 
@@ -94,7 +100,6 @@ DECLARE
   v_base_price NUMERIC;
   v_is_frozen BOOLEAN;
   v_balance NUMERIC;
-  v_has_prior_investment BOOLEAN;
   v_inv_id UUID;
 BEGIN
   v_user_id := auth.uid();
@@ -120,10 +125,6 @@ BEGIN
     RETURN json_build_object('success', false, 'error', 'Solde insuffisant', 'required', v_price, 'balance', v_balance);
   END IF;
 
-  SELECT EXISTS(
-    SELECT 1 FROM public.investments WHERE user_id = v_user_id
-  ) INTO v_has_prior_investment;
-
   PERFORM set_config('app.internal_call', 'true', false);
 
   UPDATE public.profiles SET balance = balance - v_price WHERE user_id = v_user_id;
@@ -131,10 +132,6 @@ BEGIN
   INSERT INTO public.investments (user_id, type_id, amount_invested, daily_yield, end_date)
   VALUES (v_user_id, p_type_id, v_price, v_daily_return, now() + (v_duration || ' days')::interval)
   RETURNING id INTO v_inv_id;
-
-  IF NOT v_has_prior_investment AND v_base_price > 0 THEN
-    PERFORM public.apply_referral_purchase_bonus(v_user_id, v_base_price);
-  END IF;
 
   RETURN json_build_object('success', true, 'investment_id', v_inv_id, 'paid', v_price);
 END;

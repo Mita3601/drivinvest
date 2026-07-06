@@ -11,9 +11,6 @@ AS $$
 DECLARE
   v_user_id uuid := auth.uid();
   v_self_profile_id uuid;
-  v_l1_id uuid;
-  v_l2_id uuid;
-  v_l3_id uuid;
 BEGIN
   IF v_user_id IS NULL THEN
     RETURN false;
@@ -27,22 +24,15 @@ BEGIN
     RETURN false;
   END IF;
 
-  IF p_profile_id = v_self_profile_id THEN
-    RETURN true;
-  END IF;
-
-  SELECT referred_by INTO v_l1_id FROM public.profiles WHERE id = p_profile_id;
-  IF v_l1_id = v_self_profile_id THEN
-    RETURN true;
-  END IF;
-
-  SELECT referred_by INTO v_l2_id FROM public.profiles WHERE id = v_l1_id;
-  IF v_l2_id = v_self_profile_id THEN
-    RETURN true;
-  END IF;
-
-  SELECT referred_by INTO v_l3_id FROM public.profiles WHERE id = v_l2_id;
-  RETURN v_l3_id = v_self_profile_id;
+  RETURN EXISTS (
+    SELECT 1
+    FROM public.profiles p0
+    LEFT JOIN public.profiles p1 ON p0.referred_by = p1.id
+    LEFT JOIN public.profiles p2 ON p1.referred_by = p2.id
+    LEFT JOIN public.profiles p3 ON p2.referred_by = p3.id
+    WHERE p0.id = p_profile_id
+      AND v_self_profile_id IN (p0.id, p1.id, p2.id, p3.id)
+  );
 END;
 $$;
 

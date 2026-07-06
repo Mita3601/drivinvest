@@ -31,18 +31,31 @@ const InvestmentCard = ({ item }: { item: InvestmentTypeRow }) => {
 
   const handleActivate = async () => {
     setLoading(true);
-    const { data, error } = await supabase.rpc("buy_investment", { p_type_id: item.id });
+    const { data, error } = await supabase.rpc("buy_investment", {
+      p_type_id: item.id,
+    });
 
     if (error) {
-      toast({ title: "Erreur", description: error.message, variant: "destructive" });
+      toast({
+        title: "Erreur",
+        description: error.message,
+        variant: "destructive",
+      });
     } else {
       const result = data as any;
       if (result?.success) {
-        toast({ title: "Achat réussi ! 🎉", description: `${item.name} activé. Revenus quotidiens : ${formatCFA(item.daily_return)}` });
+        toast({
+          title: "Achat réussi ! 🎉",
+          description: `${item.name} activé. Revenus quotidiens : ${formatCFA(item.daily_return)}`,
+        });
         queryClient.invalidateQueries({ queryKey: ["profile"] });
         queryClient.invalidateQueries({ queryKey: ["investments"] });
+        queryClient.invalidateQueries({ queryKey: ["team_stats_v2"] });
       } else {
-        toast({ title: "Solde insuffisant", description: `Vous avez besoin de ${formatCFA(item.price)} pour activer cette unité.` });
+        toast({
+          title: "Solde insuffisant",
+          description: `Vous avez besoin de ${formatCFA(item.price)} pour activer cette unité.`,
+        });
       }
     }
     setLoading(false);
@@ -53,7 +66,14 @@ const InvestmentCard = ({ item }: { item: InvestmentTypeRow }) => {
   return (
     <div className="rounded-3xl overflow-hidden bg-card border-gold-gradient card-glow animate-slide-up">
       <div className="relative aspect-square overflow-hidden">
-        <img src={imgSrc} alt={item.name} loading="lazy" className="w-full h-full object-cover" width={512} height={512} />
+        <img
+          src={imgSrc}
+          alt={item.name}
+          loading="lazy"
+          className="w-full h-full object-cover"
+          width={512}
+          height={512}
+        />
         {item.tag && (
           <span className="absolute top-3 left-3 bg-primary text-primary-foreground text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">
             {item.tag}
@@ -61,19 +81,27 @@ const InvestmentCard = ({ item }: { item: InvestmentTypeRow }) => {
         )}
       </div>
       <div className="p-4 space-y-3">
-        <h3 className="font-display font-bold text-foreground text-base">{item.name}</h3>
+        <h3 className="font-display font-bold text-foreground text-base">
+          {item.name}
+        </h3>
         <div className="flex justify-between text-xs">
           <div>
             <span className="text-muted-foreground">Revenu quotidien</span>
-            <p className="text-destructive font-bold text-sm">{formatCFA(item.daily_return)}</p>
+            <p className="text-destructive font-bold text-sm">
+              {formatCFA(item.daily_return)}
+            </p>
           </div>
           <div className="text-right">
             <span className="text-muted-foreground">Revenu total</span>
-            <p className="text-destructive font-bold text-sm">{formatCFA(item.total_return)}</p>
+            <p className="text-destructive font-bold text-sm">
+              {formatCFA(item.total_return)}
+            </p>
           </div>
         </div>
         <div className="flex items-center justify-between pt-1">
-          <span className="font-display font-extrabold text-lg text-foreground">{formatCFA(item.price)}</span>
+          <span className="font-display font-extrabold text-lg text-foreground">
+            {formatCFA(item.price)}
+          </span>
           <button
             onClick={handleActivate}
             disabled={loading}

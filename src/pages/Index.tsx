@@ -9,6 +9,7 @@ import {
   Tag,
   Info,
   CheckCircle2,
+  Wallet,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useProfile } from "@/hooks/useProfile";
@@ -98,6 +99,8 @@ const Index = () => {
     { label: "Inviter", icon: UserPlus, path: "/invite" },
     { label: "Code Promo", icon: Ticket, path: "/promo" },
   ];
+  const balance = Number(profile?.balance ?? 0);
+  const formatCFA = (value: number) => value.toLocaleString("fr-FR");
 
   return (
     <div className="space-y-6 pb-6">
@@ -131,6 +134,25 @@ const Index = () => {
                   }`}
                 />
               ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Solde visible */}
+      <div className="px-4">
+        <div className="rounded-3xl bg-gradient-to-r from-primary to-primary/80 p-4 text-primary-foreground shadow-md">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-[11px] uppercase tracking-[0.25em] opacity-80">
+                Solde disponible
+              </p>
+              <p className="mt-1 text-2xl font-display font-bold">
+                {formatCFA(balance)} F
+              </p>
+            </div>
+            <div className="rounded-2xl bg-white/20 p-3">
+              <Wallet className="h-6 w-6" />
             </div>
           </div>
         </div>
@@ -174,7 +196,8 @@ const Index = () => {
             <div className="flex items-baseline gap-2 mt-0.5">
               <span className="text-xs text-muted-foreground">1/1</span>
               <span className="text-success font-display font-bold text-base">
-                {bonusAmount.toFixed(2)} <span className="text-[10px]">FCFA</span>
+                {bonusAmount.toFixed(2)}{" "}
+                <span className="text-[10px]">FCFA</span>
               </span>
             </div>
           </div>

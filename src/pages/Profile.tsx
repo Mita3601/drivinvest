@@ -7,6 +7,7 @@ import {
   Smartphone,
   Settings,
   Download,
+  Wallet,
   User as UserIcon,
 } from "lucide-react";
 import { useProfile } from "@/hooks/useProfile";
@@ -23,11 +24,22 @@ const Profile = () => {
 
   const displayName =
     profile?.full_name || user?.email?.split("@")[0] || "Utilisateur";
+  const formatCFA = (value: number) => value.toLocaleString("fr-FR");
 
   // VIP tier from total invested / balance thresholds (simple derivation)
   const total = Number(profile?.total_deposited ?? 0);
   const currentVip =
-    total >= 500000 ? 5 : total >= 100000 ? 4 : total >= 50000 ? 3 : total >= 20000 ? 2 : total >= 5000 ? 1 : 0;
+    total >= 500000
+      ? 5
+      : total >= 100000
+        ? 4
+        : total >= 50000
+          ? 3
+          : total >= 20000
+            ? 2
+            : total >= 5000
+              ? 1
+              : 0;
   const nextVip = currentVip + 1;
 
   const menu = [
@@ -52,7 +64,9 @@ const Profile = () => {
             {isLoading ? (
               <Skeleton className="h-6 w-32" />
             ) : (
-              <p className="font-display font-bold text-foreground text-lg truncate">{displayName}</p>
+              <p className="font-display font-bold text-foreground text-lg truncate">
+                {displayName}
+              </p>
             )}
             <div className="flex items-center gap-2 mt-2">
               <div className="inline-flex items-center gap-1 bg-primary text-white text-[11px] font-bold px-2.5 py-1 rounded-md">
@@ -72,6 +86,22 @@ const Profile = () => {
             Louez n'importe quel produit et débloquez VIP{nextVip}
           </p>
         </div>
+
+        <div className="mt-4 rounded-2xl border border-primary/10 bg-background/70 p-3">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                Solde disponible
+              </p>
+              <p className="mt-1 text-xl font-display font-bold text-foreground">
+                {formatCFA(Number(profile?.balance ?? 0))} F
+              </p>
+            </div>
+            <div className="rounded-full bg-primary/10 p-2.5 text-primary">
+              <Wallet className="h-5 w-5" />
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Menu list */}
@@ -85,7 +115,9 @@ const Profile = () => {
               className="w-full flex items-center gap-3 bg-card border border-border rounded-xl px-4 py-4 hover:bg-secondary/60 transition-colors"
             >
               <Icon className="w-5 h-5 text-primary shrink-0" strokeWidth={2} />
-              <span className="flex-1 text-left text-foreground text-[15px]">{m.label}</span>
+              <span className="flex-1 text-left text-foreground text-[15px]">
+                {m.label}
+              </span>
               <ChevronRight className="w-5 h-5 text-muted-foreground" />
             </button>
           );

@@ -52,6 +52,7 @@ const RetraitPage = () => {
   const [operator, setOperator] = useState<string | null>(null);
   const [walletNumber, setWalletNumber] = useState("");
   const [country, setCountry] = useState("");
+  const [selectedWalletId, setSelectedWalletId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
@@ -72,39 +73,51 @@ const RetraitPage = () => {
   });
 
   const balance = profile?.balance ?? 0;
-  const feePercent = settings?.withdrawal_fee_percent ?? 18;
+  const feePercent = settings?.withdrawal_fee_percent ?? 10;
   const minWithdrawal = settings?.min_withdrawal ?? 2200;
   const numAmount = Number(amount) || 0;
   const fee = Math.round((numAmount * feePercent) / 100);
   const netAmount = numAmount - fee;
-  const availableOperators = useMemo(
-    () => operatorMap[country] || [],
-    [country],
-  );
-  const isCardImmutable = Boolean(
-    profile?.preferred_withdrawal_country &&
-    profile?.preferred_withdrawal_number,
-  );
 
-  useEffect(() => {
-    if (profile) {
-      if (profile.preferred_withdrawal_country) {
-        setCountry(profile.preferred_withdrawal_country);
-      }
-      if (profile.preferred_withdrawal_operator) {
-        setOperator(profile.preferred_withdrawal_operator);
-      }
-      if (profile.preferred_withdrawal_number) {
-        setWalletNumber(profile.preferred_withdrawal_number);
-      }
+  // Build list of linked wallets (currently a single "preferred" wallet stored on `profiles`)
+  const wallets = useMemo(() => {
+    const arr: Array<any> = [];
+    if (profile?.preferred_withdrawal_number) {
+      arr.push({
+        id: "primary",
+        country: profile.preferred_withdrawal_country,
+        operator: profile.preferred_withdrawal_operator,
+        number: profile.preferred_withdrawal_number,
+        label: `${profile.preferred_withdrawal_operator || "Wallet"} • ${profile.preferred_withdrawal_number}`,
+      });
     }
+    return arr;
   }, [profile]);
 
   useEffect(() => {
-    if (operator && !availableOperators.some((op) => op.id === operator)) {
-      setOperator(null);
+    // Default to primary wallet if available
+    if (wallets.length && !selectedWalletId) {
+      setSelectedWalletId(wallets[0].id);
     }
-  }, [availableOperators, operator]);
+  }, [wallets, selectedWalletId]);
+
+  const selectedWallet = useMemo(
+    () => wallets.find((w) => w.id === selectedWalletId) || null,
+    [wallets, selectedWalletId],
+  );
+
+  useEffect(() => {
+    if (selectedWallet) {
+      setCountry(selectedWallet.country || "");
+      setOperator(selectedWallet.operator || null);
+      setWalletNumber(selectedWallet.number || "");
+    } else {
+      // clear when no selection
+      setCountry("");
+      setOperator(null);
+      setWalletNumber("");
+    }
+  }, [selectedWallet]);
 
   const handleSubmit = async () => {
     if (balance < minWithdrawal) {
@@ -236,73 +249,55 @@ const RetraitPage = () => {
 
       <div className="px-4 space-y-2">
         <label className="text-xs text-muted-foreground uppercase tracking-wider font-medium">
-          Pays
+          Portefeuille lié
         </label>
-        {isCardImmutable ? (
-          <div className="w-full rounded-xl bg-secondary border border-border px-4 py-3 text-foreground text-sm">
-            {profile?.preferred_withdrawal_country}
-          </div>
-        ) : (
-          <select
-            value={country}
-            onChange={(e) => setCountry(e.target.value)}
-            className="w-full bg-secondary border border-border rounded-xl px-4 py-3 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-          >
-            <option value="" disabled>
-              Sélectionnez un pays
-            </option>
-            {countries.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.label}
-              </option>
-            ))}
-          </select>
-        )}
-      </div>
-
-      <div className="px-4 space-y-2">
-        <label className="text-xs text-muted-foreground uppercase tracking-wider font-medium">
-          Opérateur
-        </label>
-        <div className="flex gap-2">
-          {availableOperators.length > 0 ? (
-            availableOperators.map((op) => (
+        {wallets.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {wallets.map((w: any) => (
               <button
-                key={op.id}
-                onClick={() => setOperator(op.id)}
-                className={`flex-1 py-3 rounded-xl font-bold text-xs border transition-all ${
-                  operator === op.id
-                    ? "bg-primary text-primary-foreground border-primary"
+                key={w.id}
+                onClick={() => setSelectedWalletId(w.id)}
+                className={`w-full text-left p-3 rounded-xl border transition-shadow flex items-center justify-between gap-3 ${
+                  selectedWalletId === w.id
+                    ? "bg-gradient-to-r from-primary to-primary/80 text-primary-foreground shadow-lg border-primary"
                     : "bg-secondary border-border text-foreground"
                 }`}
               >
-                {op.label}
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center font-bold text-sm uppercase">
+                    {w.operator ? (w.operator + "").slice(0, 2) : "WL"}
+                  </div>
+                  <div>
+                    <div className="text-sm font-bold truncate">{w.label}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {w.country}
+                    </div>
+                  </div>
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  {w.number.replace(
+                    /(\d{3})(\d{2})(\d{2})(\d{2})/,
+                    "$1 $2 $3 $4",
+                  )}
+                </div>
               </button>
-            ))
-          ) : (
-            <div className="flex-1 py-3 rounded-xl bg-secondary border border-border text-muted-foreground text-center text-xs">
-              Sélectionnez d'abord un pays pour choisir un opérateur.
-            </div>
-          )}
-        </div>
-      </div>
-
-      <div className="px-4 space-y-2">
-        <label className="text-xs text-muted-foreground uppercase tracking-wider font-medium">
-          Numéro de réception (Mobile Money)
-        </label>
-        {isCardImmutable ? (
-          <div className="w-full rounded-xl bg-secondary border border-border px-4 py-3 text-foreground text-sm">
-            {profile?.preferred_withdrawal_number}
+            ))}
           </div>
         ) : (
-          <input
-            type="tel"
-            placeholder="Ex: 07 00 00 00 00"
-            value={walletNumber}
-            onChange={(e) => setWalletNumber(e.target.value)}
-            className="w-full bg-secondary border border-border rounded-xl px-4 py-3 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-          />
+          <div className="space-y-2">
+            <div className="w-full py-3 rounded-xl bg-secondary border border-border text-muted-foreground text-center text-xs">
+              Aucun portefeuille lié. Ajoutez-en un depuis la page Liaison de
+              compte.
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={() => navigate("/link-account")}
+                className="col-span-2 py-3 rounded-xl font-bold text-sm bg-primary text-white"
+              >
+                Lier un compte maintenant
+              </button>
+            </div>
+          </div>
         )}
       </div>
 

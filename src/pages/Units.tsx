@@ -12,7 +12,10 @@ import pc6 from "@/assets/pc-vip6.jpg";
 
 const productImages = [pc1, pc2, pc3, pc4, pc5, pc6];
 const fmt = (n: number) =>
-  n.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  n.toLocaleString("fr-FR", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
 
 type Filter = "ALL" | "P" | "G";
 
@@ -41,15 +44,25 @@ const Units = () => {
 
   const handleBuy = async (item: any) => {
     setLoadingId(item.id);
-    const { data, error } = await supabase.rpc("buy_investment", { p_type_id: item.id });
+    const { data, error } = await supabase.rpc("buy_investment", {
+      p_type_id: item.id,
+    });
     if (error) {
-      toast({ title: "Erreur", description: error.message, variant: "destructive" });
+      toast({
+        title: "Erreur",
+        description: error.message,
+        variant: "destructive",
+      });
     } else {
       const r = data as any;
       if (r?.success) {
-        toast({ title: "Achat réussi ! 🎉", description: `${item.name} activé.` });
+        toast({
+          title: "Achat réussi ! 🎉",
+          description: `${item.name} activé.`,
+        });
         queryClient.invalidateQueries({ queryKey: ["profile"] });
         queryClient.invalidateQueries({ queryKey: ["my_investments_count"] });
+        queryClient.invalidateQueries({ queryKey: ["team_stats_v2"] });
       } else {
         toast({ title: r?.error || "Erreur", variant: "destructive" });
       }
@@ -91,11 +104,18 @@ const Units = () => {
 
         {filtered.map((item, i) => {
           const isG = (item.category || "P") === "G";
-          const cycleLabel = isG ? `${item.total_cycles} Semaine` : `${item.total_cycles} Jour`;
-          const yieldLabel = isG ? "Revenus Hebdomadaire" : "Quotidien de revenu";
+          const cycleLabel = isG
+            ? `${item.total_cycles} Semaine`
+            : `${item.total_cycles} Jour`;
+          const yieldLabel = isG
+            ? "Revenus Hebdomadaire"
+            : "Quotidien de revenu";
           const rate =
             item.price > 0
-              ? ((Number(item.total_return) / Number(item.price)) * 100).toFixed(1)
+              ? (
+                  (Number(item.total_return) / Number(item.price)) *
+                  100
+                ).toFixed(1)
               : "0";
           const tag = item.tag as string | null;
 
@@ -129,9 +149,24 @@ const Units = () => {
                 </div>
 
                 <div className="flex-1 min-w-0 space-y-1 text-sm">
-                  <Row label="Prix" value={`${fmt(item.price)}`} unit="FCFA" bold />
-                  <Row label={yieldLabel} value={`${fmt(item.daily_return)}`} unit="FCFA" bold />
-                  <Row label="Revenu Total" value={`${fmt(item.total_return)}`} unit="FCFA" bold />
+                  <Row
+                    label="Prix"
+                    value={`${fmt(item.price)}`}
+                    unit="FCFA"
+                    bold
+                  />
+                  <Row
+                    label={yieldLabel}
+                    value={`${fmt(item.daily_return)}`}
+                    unit="FCFA"
+                    bold
+                  />
+                  <Row
+                    label="Revenu Total"
+                    value={`${fmt(item.total_return)}`}
+                    unit="FCFA"
+                    bold
+                  />
                   <Row label="Cycles" value={cycleLabel} bold />
                 </div>
               </div>
@@ -139,7 +174,9 @@ const Units = () => {
               <div className="grid grid-cols-2 divide-x divide-border bg-muted/40 text-xs">
                 <div className="flex justify-between px-3 py-2">
                   <span className="text-muted-foreground">Nom</span>
-                  <span className="font-semibold text-foreground">{item.name}</span>
+                  <span className="font-semibold text-foreground">
+                    {item.name}
+                  </span>
                 </div>
                 <div className="flex justify-between px-3 py-2">
                   <span className="text-muted-foreground">Taux de réponse</span>
@@ -156,7 +193,11 @@ const Units = () => {
                   onClick={() => handleBuy(item)}
                   className="rounded-full bg-primary text-primary-foreground text-xs font-bold px-5 py-2 hover:opacity-90 transition-opacity disabled:opacity-50"
                 >
-                  {loadingId === item.id ? "..." : item.is_frozen ? "GELÉ" : "ACHETER"}
+                  {loadingId === item.id
+                    ? "..."
+                    : item.is_frozen
+                      ? "GELÉ"
+                      : "ACHETER"}
                 </button>
               </div>
             </div>
@@ -164,7 +205,9 @@ const Units = () => {
         })}
 
         {!isLoading && !filtered.length && (
-          <p className="text-center text-muted-foreground py-8">Aucun produit.</p>
+          <p className="text-center text-muted-foreground py-8">
+            Aucun produit.
+          </p>
         )}
       </div>
     </div>
@@ -186,7 +229,9 @@ const Row = ({
     <span className="text-muted-foreground text-xs">{label}</span>
     <span className={`text-foreground ${bold ? "font-bold" : ""}`}>
       {value}
-      {unit && <span className="text-[10px] text-muted-foreground ml-1">{unit}</span>}
+      {unit && (
+        <span className="text-[10px] text-muted-foreground ml-1">{unit}</span>
+      )}
     </span>
   </div>
 );

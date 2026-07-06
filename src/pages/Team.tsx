@@ -19,23 +19,35 @@ const Team = () => {
 
   const { data: stats } = useQuery({
     queryKey: ["team_stats_v2", user?.id],
+    refetchOnMount: "always",
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
+    staleTime: 0,
     queryFn: async () => {
       if (!profile?.id)
         return {
           totalRevenue: 0,
           teamSize: 0,
           official: 0,
-          levels: { 1: { size: 0, rev: 0 }, 2: { size: 0, rev: 0 }, 3: { size: 0, rev: 0 } },
+          levels: {
+            1: { size: 0, rev: 0 },
+            2: { size: 0, rev: 0 },
+            3: { size: 0, rev: 0 },
+          },
         };
 
       const { data: lvl1 } = await supabase
-        .from("profiles").select("id,user_id").eq("referred_by", profile.id);
+        .from("profiles")
+        .select("id,user_id")
+        .eq("referred_by", profile.id);
       const ids1 = (lvl1 || []).map((p) => p.id);
 
       let lvl2: any[] = [];
       if (ids1.length) {
         const { data } = await supabase
-          .from("profiles").select("id,user_id").in("referred_by", ids1);
+          .from("profiles")
+          .select("id,user_id")
+          .in("referred_by", ids1);
         lvl2 = data || [];
       }
       const ids2 = lvl2.map((p: any) => p.id);
@@ -43,7 +55,9 @@ const Team = () => {
       let lvl3: any[] = [];
       if (ids2.length) {
         const { data } = await supabase
-          .from("profiles").select("id,user_id").in("referred_by", ids2);
+          .from("profiles")
+          .select("id,user_id")
+          .in("referred_by", ids2);
         lvl3 = data || [];
       }
 
@@ -65,9 +79,15 @@ const Team = () => {
 
       const totalRevenue =
         levelStats[1].rev + levelStats[2].rev + levelStats[3].rev;
-      const teamSize = levelStats[1].size + levelStats[2].size + levelStats[3].size;
+      const teamSize =
+        levelStats[1].size + levelStats[2].size + levelStats[3].size;
 
-      return { totalRevenue, teamSize, official: officialSet.size, levels: levelStats };
+      return {
+        totalRevenue,
+        teamSize,
+        official: officialSet.size,
+        levels: levelStats,
+      };
     },
     enabled: !!profile?.id,
   });
@@ -77,7 +97,9 @@ const Team = () => {
       <div className="p-4 space-y-4">
         <Skeleton className="h-24 rounded-2xl" />
         <Skeleton className="h-14 rounded-2xl" />
-        {[1, 2, 3].map((i) => <Skeleton key={i} className="h-32 rounded-2xl" />)}
+        {[1, 2, 3].map((i) => (
+          <Skeleton key={i} className="h-32 rounded-2xl" />
+        ))}
       </div>
     );
   }
@@ -89,17 +111,23 @@ const Team = () => {
         <div>
           <div className="flex items-center gap-2 text-foreground/80">
             <Tag className="w-4 h-4 text-primary" strokeWidth={2.2} />
-            <span className="text-[13px] font-bold uppercase tracking-wide">Total de revenu</span>
+            <span className="text-[13px] font-bold uppercase tracking-wide">
+              Total de revenu
+            </span>
           </div>
           <p className="mt-2 font-display font-extrabold text-primary text-3xl">
             {(stats?.totalRevenue ?? 0).toLocaleString("fr-FR")}
-            <span className="ml-1 text-[11px] font-bold text-muted-foreground align-top">FCFA</span>
+            <span className="ml-1 text-[11px] font-bold text-muted-foreground align-top">
+              FCFA
+            </span>
           </p>
         </div>
         <div>
           <div className="flex items-center gap-2 text-foreground/80">
             <Tag className="w-4 h-4 text-primary" strokeWidth={2.2} />
-            <span className="text-[13px] font-bold uppercase tracking-wide">Taille l'équipe</span>
+            <span className="text-[13px] font-bold uppercase tracking-wide">
+              Taille l'équipe
+            </span>
           </div>
           <p className="mt-2 font-display font-extrabold text-primary text-3xl">
             {stats?.teamSize ?? 0}
@@ -136,7 +164,9 @@ const Team = () => {
                 <p className="text-xs text-muted-foreground">Revenus</p>
                 <p className="font-display font-extrabold text-primary text-xl mt-1">
                   {s.rev.toLocaleString("fr-FR")}
-                  <span className="ml-1 text-[10px] text-muted-foreground align-top">FCFA</span>
+                  <span className="ml-1 text-[10px] text-muted-foreground align-top">
+                    FCFA
+                  </span>
                 </p>
               </div>
             </div>

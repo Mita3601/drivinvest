@@ -5,7 +5,20 @@ import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
 import { Snowflake, Pencil, Star } from "lucide-react";
 
-const formatCFA = (n: number) => n.toLocaleString("fr-FR");
+type AdminProfile = {
+  id: string;
+  user_id: string;
+  full_name: string | null;
+  email: string | null;
+  balance: number | string | null;
+  referral_code: string | null;
+  is_frozen: boolean;
+  is_promoter: boolean;
+  created_at: string;
+};
+
+const formatCFA = (n: number | string | null | undefined) =>
+  Number(n ?? 0).toLocaleString("fr-FR");
 
 const AdminUsers = () => {
   const qc = useQueryClient();
@@ -92,7 +105,7 @@ const AdminUsers = () => {
       <p className="text-muted-foreground text-xs">
         {profiles?.length || 0} utilisateurs
       </p>
-      {profiles?.map((p: any) => (
+      {profiles?.map((p: AdminProfile) => (
         <div
           key={p.id}
           className="rounded-xl bg-secondary border border-border p-4 space-y-3"
@@ -153,7 +166,10 @@ const AdminUsers = () => {
             <div className="flex gap-2">
               <button
                 onClick={() =>
-                  setEditing({ id: p.user_id, balance: String(p.balance) })
+                  setEditing({
+                    id: p.user_id,
+                    balance: String(p.balance ?? "0"),
+                  })
                 }
                 className="flex-1 flex items-center justify-center gap-1 bg-primary/15 text-primary font-bold py-2 rounded-lg text-xs"
               >
