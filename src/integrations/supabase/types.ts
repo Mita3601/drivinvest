@@ -415,6 +415,7 @@ export type Database = {
           net_amount: number | null
           payment_url: string | null
           proof_url: string | null
+          provider_token: string | null
           reference: string | null
           sender_number: string | null
           status: Database["public"]["Enums"]["transaction_status"]
@@ -433,6 +434,7 @@ export type Database = {
           net_amount?: number | null
           payment_url?: string | null
           proof_url?: string | null
+          provider_token?: string | null
           reference?: string | null
           sender_number?: string | null
           status?: Database["public"]["Enums"]["transaction_status"]
@@ -451,6 +453,7 @@ export type Database = {
           net_amount?: number | null
           payment_url?: string | null
           proof_url?: string | null
+          provider_token?: string | null
           reference?: string | null
           sender_number?: string | null
           status?: Database["public"]["Enums"]["transaction_status"]
@@ -532,6 +535,14 @@ export type Database = {
       }
       claim_daily_bonus: { Args: never; Returns: Json }
       claim_mission_reward: { Args: { p_mission_type: string }; Returns: Json }
+      confirm_moneyfusion_deposit: {
+        Args: {
+          p_amount?: number
+          p_provider_token?: string
+          p_reference?: string
+        }
+        Returns: Json
+      }
       confirm_westpay_deposit: {
         Args: { p_amount: number; p_reference: string }
         Returns: Json
