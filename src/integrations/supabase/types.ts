@@ -415,6 +415,7 @@ export type Database = {
           net_amount: number | null
           payment_url: string | null
           proof_url: string | null
+          provider_token: string | null
           reference: string | null
           sender_number: string | null
           status: Database["public"]["Enums"]["transaction_status"]
@@ -433,6 +434,7 @@ export type Database = {
           net_amount?: number | null
           payment_url?: string | null
           proof_url?: string | null
+          provider_token?: string | null
           reference?: string | null
           sender_number?: string | null
           status?: Database["public"]["Enums"]["transaction_status"]
@@ -451,6 +453,7 @@ export type Database = {
           net_amount?: number | null
           payment_url?: string | null
           proof_url?: string | null
+          provider_token?: string | null
           reference?: string | null
           sender_number?: string | null
           status?: Database["public"]["Enums"]["transaction_status"]
@@ -522,13 +525,30 @@ export type Database = {
         Returns: undefined
       }
       buy_investment: { Args: { p_type_id: string }; Returns: Json }
+      can_view_referral_investment: {
+        Args: { p_user_id: string }
+        Returns: boolean
+      }
+      can_view_referral_profile: {
+        Args: { p_profile_id: string }
+        Returns: boolean
+      }
       claim_daily_bonus: { Args: never; Returns: Json }
       claim_mission_reward: { Args: { p_mission_type: string }; Returns: Json }
+      confirm_moneyfusion_deposit: {
+        Args: {
+          p_amount?: number
+          p_provider_token?: string
+          p_reference?: string
+        }
+        Returns: Json
+      }
       confirm_westpay_deposit: {
         Args: { p_amount: number; p_reference: string }
         Returns: Json
       }
       distribute_daily_rewards: { Args: never; Returns: number }
+      enable_member_actions: { Args: never; Returns: undefined }
       expire_stale_deposits: { Args: never; Returns: number }
       generate_referral_code: { Args: never; Returns: string }
       get_daily_bonus_status: { Args: never; Returns: Json }
