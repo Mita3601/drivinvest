@@ -282,28 +282,3 @@ Deno.serve(async (req) => {
     );
   }
 });
-      });
-    } else {
-      await admin
-        .from("transactions")
-        .update({
-          status: "rejected",
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", tx.id);
-    }
-
-    return new Response(JSON.stringify({ received: true, success: true }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-  } catch (error) {
-    console.error("MoneyFusion webhook error", error);
-    return new Response(
-      JSON.stringify({ error: (error as Error).message || "Unknown error" }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      },
-    );
-  }
-});
