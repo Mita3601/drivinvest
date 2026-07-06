@@ -17,6 +17,11 @@ const MONEYFUSION_API_URL = getEnv([
   "MONEYFUSION_API_URL",
   "moneyfusion_api_url",
 ]);
+const MONEYFUSION_WEBHOOK_SECRET = getEnv([
+  "MONEYFUSION_WEBHOOK_SECRET",
+  "WEBHOOK_SECRET",
+  "moneyfusion_webhook_secret",
+]);
 const SUPABASE_URL = getEnv(["SUPABASE_URL", "supabase_url"]);
 const SUPABASE_ANON_KEY = getEnv(["SUPABASE_ANON_KEY", "supabase_anon_key"]);
 const SUPABASE_SERVICE_ROLE_KEY = getEnv([
@@ -151,7 +156,13 @@ Deno.serve(async (req) => {
     const reference = `MF-${crypto.randomUUID().replace(/-/g, "").slice(0, 16).toUpperCase()}`;
     const safeOrigin = returnOrigin.replace(/\/$/, "");
     const redirectUrl = `${safeOrigin}/recharge/return?ref=${reference}`;
-    const webhookUrl = `${SUPABASE_URL}/functions/v1/moneyfusion-webhook?apikey=${SUPABASE_ANON_KEY}`;
+    const webhookUrl = new URL(
+      `${SUPABASE_URL}/functions/v1/moneyfusion-webhook`,
+    );
+    webhookUrl.searchParams.set("apikey", SUPABASE_ANON_KEY);
+    if (MONEYFUSION_WEBHOOK_SECRET) {
+      webhookUrl.searchParams.set("secret", MONEYFUSION_WEBHOOK_SECRET);
+    }
 
     const paymentData = {
       totalPrice: Math.round(amount),
@@ -160,7 +171,7 @@ Deno.serve(async (req) => {
       numeroSend: phone,
       nomclient: customerName,
       return_url: redirectUrl,
-      webhook_url: webhookUrl,
+      webhook_url: webhookUrl.toString(),
     };
 
     const response = await fetch(MONEYFUSION_API_URL, {
@@ -180,12 +191,20 @@ Deno.serve(async (req) => {
       payload = {};
     }
 
+    const payloadData =
+      payload.data && typeof payload.data === "object"
+        ? (payload.data as Record<string, unknown>)
+        : {};
     const statusField =
       typeof payload.statut === "string"
         ? payload.statut
         : typeof payload.status === "string"
           ? payload.status
-          : undefined;
+          : typeof payloadData.statut === "string"
+            ? payloadData.statut
+            : typeof payloadData.status === "string"
+              ? payloadData.status
+              : undefined;
     const paymentUrl =
       typeof payload.url === "string"
         ? payload.url
@@ -193,7 +212,13 @@ Deno.serve(async (req) => {
           ? payload.paymentUrl
           : typeof payload.payment_url === "string"
             ? payload.payment_url
-            : null;
+            : typeof payloadData.url === "string"
+              ? payloadData.url
+              : typeof payloadData.paymentUrl === "string"
+                ? payloadData.paymentUrl
+                : typeof payloadData.payment_url === "string"
+                  ? payloadData.payment_url
+                  : null;
     const paymentToken =
       typeof payload.token === "string"
         ? payload.token
@@ -201,7 +226,13 @@ Deno.serve(async (req) => {
           ? payload.tokenPay
           : typeof payload.payment_token === "string"
             ? payload.payment_token
-            : null;
+            : typeof payloadData.token === "string"
+              ? payloadData.token
+              : typeof payloadData.tokenPay === "string"
+                ? payloadData.tokenPay
+                : typeof payloadData.payment_token === "string"
+                  ? payloadData.payment_token
+                  : null;
 
     if (!response.ok || !statusField || !paymentUrl) {
       console.error("MoneyFusion upstream error", {
@@ -233,6 +264,7 @@ Deno.serve(async (req) => {
       reference,
       method: "moneyfusion",
       payment_url: paymentUrl,
+      provider_token: paymentToken,
       country,
     } as Record<string, unknown>;
 

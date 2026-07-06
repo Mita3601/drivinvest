@@ -3,11 +3,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Clock, CheckCircle2 } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 const formatCFA = (n: number) => n.toLocaleString("fr-FR");
 
 const MyProducts = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const { data: investments, isLoading } = useQuery({
     queryKey: ["my_products"],
@@ -17,10 +19,12 @@ const MyProducts = () => {
         .select(
           "*, investment_types(name, price, daily_return, total_return, duration, image_url)",
         )
+        .eq("user_id", user?.id)
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data;
     },
+    enabled: !!user?.id,
   });
 
   const computeNext = (last: string) => {

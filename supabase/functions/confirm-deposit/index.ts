@@ -8,6 +8,7 @@ const corsHeaders = {
 };
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY");
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
 Deno.serve(async (req) => {
@@ -20,7 +21,7 @@ Deno.serve(async (req) => {
     });
 
   try {
-    if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+    if (!SUPABASE_URL || !SUPABASE_ANON_KEY || !SUPABASE_SERVICE_ROLE_KEY) {
       return new Response(JSON.stringify({ error: "Server misconfigured" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -46,12 +47,34 @@ Deno.serve(async (req) => {
       });
     }
 
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const userClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const { data: userData, error: authError } = await userClient.auth.getUser(
+      authHeader.replace("Bearer ", "").trim(),
+    );
+    if (authError || !userData.user?.id) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
     const { data: txs, error: txErr } = await admin
       .from("transactions")
       .select("id, amount, status")
       .eq("reference", reference)
+      .eq("user_id", userData.user.id)
       .limit(1);
 
     if (txErr) throw txErr;
@@ -63,26 +86,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    if (tx.status === "approved") {
-      return new Response(JSON.stringify({ success: true, already: true }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    // Call existing RPC that validates amount and credits profile
-    const { data, error } = await admin.rpc("confirm_westpay_deposit", {
-      p_reference: reference,
-      p_amount: Number(tx.amount),
-    });
-
-    if (error) {
-      return new Response(JSON.stringify({ error: error.message }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    return new Response(JSON.stringify({ success: true, result: data }), {
+    return new Response(JSON.stringify({ success: true, transaction: tx }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {

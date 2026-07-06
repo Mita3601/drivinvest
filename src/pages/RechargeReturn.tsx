@@ -45,36 +45,6 @@ const RechargeReturn = () => {
     };
   }, [reference]);
 
-  const verifyPaymentNow = async () => {
-    if (!reference) return;
-    try {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const authToken = sessionData?.session?.access_token;
-      const { data, error } = await supabase.functions.invoke(
-        "confirm-deposit",
-        {
-          headers: authToken
-            ? { Authorization: `Bearer ${authToken}` }
-            : undefined,
-          body: { reference },
-        },
-      );
-      if (error) throw error;
-      // trigger a refresh by re-querying directly
-      const { data: tx } = await supabase
-        .from("transactions")
-        .select("status, amount")
-        .eq("reference", reference)
-        .maybeSingle();
-      if (tx) {
-        setAmount(Number(tx.amount));
-        setStatus(tx.status as any);
-      }
-    } catch (e) {
-      console.error("verifyPaymentNow error", e);
-    }
-  };
-
   const formatCFA = (n: number) => n.toLocaleString("fr-FR");
 
   return (
@@ -89,14 +59,6 @@ const RechargeReturn = () => {
             Nous attendons la confirmation de MoneyFusion. Cette page se mettra
             à jour automatiquement.
           </p>
-          <div className="mt-3">
-            <button
-              onClick={verifyPaymentNow}
-              className="mt-2 bg-secondary text-foreground font-bold py-2 px-4 rounded-xl"
-            >
-              Vérifier votre paiement
-            </button>
-          </div>
         </>
       )}
       {status === "approved" && (
