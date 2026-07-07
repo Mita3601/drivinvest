@@ -72,7 +72,19 @@ const RechargePage = () => {
         throw new Error(serverMessage);
       }
       if (!data?.paymentUrl) throw new Error("Réponse invalide du serveur");
-      window.location.href = data.paymentUrl;
+      // MoneyFusion sets X-Frame-Options: SAMEORIGIN, so navigating inside an
+      // iframe (Lovable preview, in-app webview) is blocked with a "refused to
+      // connect" error. Force the redirect at the top-level window; fall back
+      // to a new tab if the top window is cross-origin and not writable.
+      try {
+        if (window.top && window.top !== window.self) {
+          window.top.location.href = data.paymentUrl;
+        } else {
+          window.location.href = data.paymentUrl;
+        }
+      } catch {
+        window.open(data.paymentUrl, "_blank", "noopener,noreferrer");
+      }
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : "Impossible de lancer le paiement";
