@@ -195,16 +195,18 @@ Deno.serve(async (req) => {
       payload.data && typeof payload.data === "object"
         ? (payload.data as Record<string, unknown>)
         : {};
+    const rawStatut =
+      payload.statut ?? payload.status ?? payloadData.statut ?? payloadData.status;
+    // MoneyFusion returns `statut: true` (boolean) on success; also accept
+    // common string variants ("success", "true", "pending"...).
     const statusField =
-      typeof payload.statut === "string"
-        ? payload.statut
-        : typeof payload.status === "string"
-          ? payload.status
-          : typeof payloadData.statut === "string"
-            ? payloadData.statut
-            : typeof payloadData.status === "string"
-              ? payloadData.status
-              : undefined;
+      typeof rawStatut === "boolean"
+        ? rawStatut
+          ? "success"
+          : "failed"
+        : typeof rawStatut === "string"
+          ? rawStatut
+          : undefined;
     const paymentUrl =
       typeof payload.url === "string"
         ? payload.url
