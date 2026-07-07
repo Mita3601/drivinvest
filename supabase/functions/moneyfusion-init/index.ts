@@ -236,7 +236,7 @@ Deno.serve(async (req) => {
                   ? payloadData.payment_token
                   : null;
 
-    if (!response.ok || !statusField || !paymentUrl) {
+    if (!response.ok || !paymentUrl || statusField === "failed") {
       console.error("MoneyFusion upstream error", {
         status: response.status,
         body: responseText,
