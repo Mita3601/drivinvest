@@ -167,15 +167,21 @@ const AdminPromoCodes = () => {
 
       <div>
         <h2 className="font-bold text-sm mb-3">Codes existants</h2>
+        <AdminSearch value={search} onChange={setSearch} placeholder="Rechercher un code..." />
         {isLoading ? (
-          <div className="space-y-2">
+          <div className="space-y-2 mt-3">
             {Array.from({ length: 3 }).map((_, i) => (
               <Skeleton key={i} className="h-16 rounded-xl" />
             ))}
           </div>
         ) : (
-          <div className="space-y-2">
-            {(codes || []).map((c: any) => {
+          <div className="space-y-2 mt-3">
+            {(codes || [])
+              .filter((c: any) =>
+                !search.trim() ||
+                c.code.toLowerCase().includes(search.trim().toLowerCase()),
+              )
+              .map((c: any) => {
               const expired = new Date(c.ends_at) < new Date();
               const exhausted = c.uses_count >= c.max_users;
               return (
