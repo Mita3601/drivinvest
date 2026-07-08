@@ -84,8 +84,13 @@ const AdminPromoters = () => {
       </div>
     );
 
-  const promoters = (profiles || []).filter((p: any) => p.is_promoter);
-  const others = (profiles || []).filter((p: any) => !p.is_promoter);
+  const q = search.trim().toLowerCase();
+  const matches = (p: any) =>
+    !q ||
+    (p.full_name || "").toLowerCase().includes(q) ||
+    (p.email || "").toLowerCase().includes(q);
+  const promoters = (profiles || []).filter((p: any) => p.is_promoter && matches(p));
+  const others = (profiles || []).filter((p: any) => !p.is_promoter && matches(p));
 
   const Card = ({ p }: { p: any }) => (
     <div className="rounded-xl bg-secondary border border-border p-4 space-y-2">
