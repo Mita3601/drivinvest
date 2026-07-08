@@ -4,6 +4,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { Star, Gift, UserPlus } from "lucide-react";
+import AdminSearch from "./AdminSearch";
 
 const formatCFA = (n: number) => n.toLocaleString("fr-FR");
 
