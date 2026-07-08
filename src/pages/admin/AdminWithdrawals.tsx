@@ -13,6 +13,7 @@ const AdminWithdrawals = () => {
   const queryClient = useQueryClient();
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [filter, setFilter] = useState<Filter>("all");
+  const [search, setSearch] = useState("");
 
   const { data: withdrawals, isLoading } = useQuery({
     queryKey: ["admin_withdrawals"],
