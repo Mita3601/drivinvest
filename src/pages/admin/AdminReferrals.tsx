@@ -1,9 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import AdminSearch from "./AdminSearch";
 
 const AdminReferrals = () => {
+  const [search, setSearch] = useState("");
   const { data: profiles, isLoading } = useQuery({
     queryKey: ["admin_referral_tree"],
     queryFn: async () => {
