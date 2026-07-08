@@ -46,16 +46,26 @@ const AdminAntifraud = () => {
 
   if (isLoading) return <div className="space-y-3">{Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-28 rounded-xl" />)}</div>;
 
+  const [search, setSearch] = useState("");
   const suspects = rows.filter((r) => r.suspect);
+  const q = search.trim().toLowerCase();
+  const visible = !q
+    ? rows
+    : rows.filter(
+        ({ p }) =>
+          (p.full_name || "").toLowerCase().includes(q) ||
+          (p.email || "").toLowerCase().includes(q),
+      );
 
   return (
     <div className="space-y-3">
+      <AdminSearch value={search} onChange={setSearch} placeholder="Rechercher nom ou email..." />
       <div className="rounded-xl bg-destructive/10 border border-destructive/30 p-4">
         <p className="text-destructive font-bold text-sm flex items-center gap-2"><AlertTriangle className="w-4 h-4" /> {suspects.length} compte(s) suspect(s)</p>
         <p className="text-muted-foreground text-[11px] mt-1">Retraits supérieurs aux entrées légitimes (dépôts + gains produits + bonus + missions).</p>
       </div>
 
-      {rows.map(({ p, deposits, withdrawals, gains, bonus, missionRew, diff, suspect }) => (
+      {visible.map(({ p, deposits, withdrawals, gains, bonus, missionRew, diff, suspect }) => (
         <div key={p.id} className={`rounded-xl border p-4 space-y-2 ${suspect ? "bg-destructive/5 border-destructive/40" : "bg-secondary border-border"}`}>
           <div className="flex items-center justify-between">
             <div>
