@@ -37,10 +37,20 @@ const AdminReferrals = () => {
 
   const nameOf = (p: any) => p.full_name || p.email?.split("@")[0] || "—";
 
+  const q = search.trim().toLowerCase();
+  const visibleTree = !q
+    ? tree
+    : tree.filter(({ parent }) =>
+        (parent.full_name || "").toLowerCase().includes(q) ||
+        (parent.email || "").toLowerCase().includes(q) ||
+        (parent.referral_code || "").toLowerCase().includes(q),
+      );
+
   return (
     <div className="space-y-3">
-      <p className="text-muted-foreground text-xs">{tree.length} parrains actifs</p>
-      {tree.map(({ parent, l1, l2, l3 }) => (
+      <AdminSearch value={search} onChange={setSearch} placeholder="Rechercher parrain, email, code..." />
+      <p className="text-muted-foreground text-xs">{visibleTree.length} parrains actifs</p>
+      {visibleTree.map(({ parent, l1, l2, l3 }) => (
         <div key={parent.id} className="rounded-xl bg-secondary border border-border p-4 space-y-2">
           <div className="flex items-center justify-between">
             <div>
