@@ -111,6 +111,7 @@ const AdminWithdrawals = () => {
 
   return (
     <div className="space-y-3">
+      <AdminSearch value={search} onChange={setSearch} placeholder="Rechercher nom, email, numéro, montant..." />
       <div className="flex gap-1 overflow-x-auto">
         {filters.map((f) => (
           <button
