@@ -13,6 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import AdminSearch from "./AdminSearch";
 
 const fmtDateTime = (d: string) =>
   new Date(d).toLocaleString("fr-FR", {
