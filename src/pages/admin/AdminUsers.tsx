@@ -27,6 +27,7 @@ const AdminUsers = () => {
     id: string;
     balance: string;
   } | null>(null);
+  const [search, setSearch] = useState("");
 
   const {
     data: profiles,
