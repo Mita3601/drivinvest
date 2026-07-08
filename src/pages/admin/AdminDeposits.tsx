@@ -164,6 +164,16 @@ const AdminDeposits = () => {
         ))}
       </div>
 
+      <div className="relative">
+        <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+        <input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Rechercher email, numéro, référence, montant..."
+          className="w-full bg-secondary border border-border rounded-xl pl-9 pr-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+        />
+      </div>
+
       <p className="text-muted-foreground text-xs">{filtered.length} dépôts</p>
       {filtered.map((tx: any) => {
         const profile = profileMap.get(tx.user_id);
