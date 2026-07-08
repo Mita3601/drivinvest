@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "@/hooks/use-toast";
 import { useState, useMemo } from "react";
-import { Check, X } from "lucide-react";
+import { Check, X, Search } from "lucide-react";
 
 const formatCFA = (n: number) => n.toLocaleString("fr-FR");
 type Filter = "all" | "pending" | "approved" | "rejected";
@@ -12,6 +12,7 @@ const AdminDeposits = () => {
   const queryClient = useQueryClient();
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [filter, setFilter] = useState<Filter>("all");
+  const [search, setSearch] = useState("");
 
   const { data: allTx, isLoading } = useQuery({
     queryKey: ["admin_all_tx"],
