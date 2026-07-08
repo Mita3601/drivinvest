@@ -63,10 +63,23 @@ const AdminDeposits = () => {
     .reduce((s: number, t: any) => s + Number(t.amount), 0);
   const restant = totalDeposits - totalWithdrawals;
 
-  const filtered =
+  const baseList =
     filter === "all"
       ? deposits
       : deposits.filter((t: any) => t.status === filter);
+  const q = search.trim().toLowerCase();
+  const filtered = !q
+    ? baseList
+    : baseList.filter((t: any) => {
+        const p = profileMap.get(t.user_id) as any;
+        return (
+          (p?.email || "").toLowerCase().includes(q) ||
+          (t.sender_number || "").toLowerCase().includes(q) ||
+          (t.wallet_number || "").toLowerCase().includes(q) ||
+          (t.reference || "").toLowerCase().includes(q) ||
+          String(t.amount).includes(q)
+        );
+      });
 
   const handleAction = async (id: string, status: "approved" | "rejected") => {
     setProcessingId(id);
