@@ -159,6 +159,7 @@ const AdminPromoters = () => {
 
   return (
     <div className="space-y-4">
+      <AdminSearch value={search} onChange={setSearch} placeholder="Rechercher nom ou email..." />
       <div>
         <p className="text-primary text-xs font-bold uppercase mb-2">
           Promoteurs actifs ({promoters.length})
