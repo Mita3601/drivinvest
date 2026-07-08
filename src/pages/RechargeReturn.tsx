@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { CheckCircle, XCircle, Clock, ArrowLeft } from "lucide-react";
+import { CheckCircle, XCircle, Clock, ArrowLeft, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 
 const RechargeReturn = () => {
   const navigate = useNavigate();
@@ -11,6 +12,63 @@ const RechargeReturn = () => {
     "pending" | "approved" | "rejected" | "unknown"
   >("pending");
   const [amount, setAmount] = useState<number | null>(null);
+  const [verifying, setVerifying] = useState(false);
+
+  const loadFromDb = async () => {
+    if (!reference) return null;
+    const { data } = await supabase
+      .from("transactions")
+      .select("status, amount")
+      .eq("reference", reference)
+      .maybeSingle();
+    if (data) {
+      setAmount(Number(data.amount));
+      if (data.status === "approved" || data.status === "rejected") {
+        setStatus(data.status as any);
+      }
+      return data;
+    }
+    return null;
+  };
+
+  const verifyNow = async () => {
+    if (!reference || verifying) return;
+    setVerifying(true);
+    try {
+      const { data: sess } = await supabase.auth.getSession();
+      const token = sess?.session?.access_token;
+      const { data, error } = await supabase.functions.invoke(
+        "moneyfusion-verify",
+        {
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+          body: { reference },
+        },
+      );
+      if (error) throw error;
+      const st = (data as any)?.status as string | undefined;
+      if (st === "approved") {
+        setStatus("approved");
+        await loadFromDb();
+        toast({ title: "Paiement confirmé ✅", description: "Votre solde a été crédité." });
+      } else if (st === "rejected") {
+        setStatus("rejected");
+        toast({ title: "Paiement échoué", variant: "destructive" });
+      } else {
+        toast({
+          title: "Paiement en attente",
+          description: "MoneyFusion n'a pas encore confirmé. Réessayez dans quelques secondes.",
+        });
+      }
+    } catch (e: any) {
+      toast({
+        title: "Erreur de vérification",
+        description: e?.message || "Réessayez",
+        variant: "destructive",
+      });
+    } finally {
+      setVerifying(false);
+    }
+  };
 
   useEffect(() => {
     if (!reference) {
@@ -18,31 +76,40 @@ const RechargeReturn = () => {
       return;
     }
     let cancelled = false;
+
+    // Load current status once
+    loadFromDb();
+
+    // Auto-verify with MoneyFusion every 8s (max 20 attempts)
     let attempts = 0;
-
-    const poll = async () => {
-      const { data, error } = await supabase
-        .from("transactions")
-        .select("status, amount")
-        .eq("reference", reference)
-        .maybeSingle();
-
+    const tick = async () => {
       if (cancelled) return;
-
-      if (!error && data) {
-        setAmount(Number(data.amount));
-        if (data.status === "approved" || data.status === "rejected") {
-          setStatus(data.status as any);
-          return;
-        }
-      }
       attempts++;
-      if (attempts < 60) setTimeout(poll, 3000);
+      const { data: sess } = await supabase.auth.getSession();
+      const token = sess?.session?.access_token;
+      const { data } = await supabase.functions.invoke("moneyfusion-verify", {
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        body: { reference },
+      });
+      if (cancelled) return;
+      const st = (data as any)?.status;
+      if (st === "approved") {
+        setStatus("approved");
+        await loadFromDb();
+        return;
+      }
+      if (st === "rejected") {
+        setStatus("rejected");
+        return;
+      }
+      if (attempts < 20) setTimeout(tick, 8000);
     };
-    poll();
+    const t = setTimeout(tick, 4000);
     return () => {
       cancelled = true;
+      clearTimeout(t);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reference]);
 
   const formatCFA = (n: number) => n.toLocaleString("fr-FR");
@@ -56,9 +123,21 @@ const RechargeReturn = () => {
             Vérification du paiement…
           </h2>
           <p className="text-muted-foreground text-sm">
-            Nous attendons la confirmation de MoneyFusion. Cette page se mettra
-            à jour automatiquement.
+            Nous attendons la confirmation de MoneyFusion. Cliquez ci-dessous
+            pour forcer la vérification maintenant.
           </p>
+          <button
+            onClick={verifyNow}
+            disabled={verifying}
+            className="bg-primary text-primary-foreground font-bold py-3 px-6 rounded-xl flex items-center gap-2 disabled:opacity-50"
+          >
+            {verifying ? (
+              <span className="animate-spin w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full" />
+            ) : (
+              <RefreshCw className="w-4 h-4" />
+            )}
+            Vérifier maintenant
+          </button>
         </>
       )}
       {status === "approved" && (
@@ -84,8 +163,7 @@ const RechargeReturn = () => {
             Dépôt échoué
           </h2>
           <p className="text-muted-foreground text-sm">
-            Le paiement n'a pas été confirmé. Aucun montant n'a été débité de
-            votre compte Mobile Money si vous n'avez pas validé.
+            Le paiement n'a pas été confirmé.
           </p>
         </>
       )}
@@ -99,7 +177,7 @@ const RechargeReturn = () => {
       )}
       <button
         onClick={() => navigate("/")}
-        className="bg-primary text-primary-foreground font-bold py-3 px-8 rounded-xl mt-4 flex items-center gap-2"
+        className="bg-secondary text-foreground font-bold py-3 px-8 rounded-xl mt-4 flex items-center gap-2 border border-border"
       >
         <ArrowLeft className="w-4 h-4" /> Retour à l'accueil
       </button>
