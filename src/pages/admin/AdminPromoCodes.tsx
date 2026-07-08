@@ -43,6 +43,7 @@ const AdminPromoCodes = () => {
   const [endsAt, setEndsAt] = useState("");
   const [maxUsers, setMaxUsers] = useState("10");
   const [creating, setCreating] = useState(false);
+  const [search, setSearch] = useState("");
 
   const { data: codes, isLoading } = useQuery({
     queryKey: ["admin_promo_codes"],
