@@ -218,8 +218,17 @@ const AdminDeposits = () => {
                   </p>
                 </div>
               </div>
+              <div className="rounded-xl bg-primary/10 border border-primary/30 p-3">
+                <p className="text-[11px] uppercase tracking-[0.2em] text-primary font-bold">
+                  📱 Numéro du déposant
+                </p>
+                <p className="font-display font-bold text-foreground text-base mt-1 select-all">
+                  {tx.sender_number || "—"}
+                </p>
+              </div>
               <p>
-                Méthode: {paymentMethod} • Expéditeur: {tx.sender_number || "—"}
+                Méthode: {paymentMethod} • Réf:{" "}
+                <span className="select-all">{tx.reference || "—"}</span>
               </p>
               <p>{new Date(tx.created_at).toLocaleString("fr-FR")}</p>
               {tx.proof_url && (
