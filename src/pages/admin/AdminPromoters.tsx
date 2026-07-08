@@ -12,6 +12,7 @@ const AdminPromoters = () => {
   const qc = useQueryClient();
   const [grantingFor, setGrantingFor] = useState<string | null>(null);
   const [productId, setProductId] = useState<string>("");
+  const [search, setSearch] = useState("");
 
   const { data: profiles, isLoading } = useQuery({
     queryKey: ["admin_profiles_all"],
