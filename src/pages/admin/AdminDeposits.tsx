@@ -20,7 +20,7 @@ const AdminDeposits = () => {
       const { data, error } = await supabase
         .from("transactions")
         .select(
-          "id,user_id,type,amount,status,method,sender_number,wallet_number,country,proof_url,created_at,updated_at",
+          "id,user_id,type,amount,status,method,sender_number,wallet_number,country,proof_url,reference,created_at,updated_at",
         )
         .order("created_at", { ascending: false });
       if (error) throw error;
