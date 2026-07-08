@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "@/hooks/use-toast";
 import { useState, useMemo } from "react";
-import { Check, X } from "lucide-react";
+import { Check, X, Search } from "lucide-react";
 
 const formatCFA = (n: number) => n.toLocaleString("fr-FR");
 type Filter = "all" | "pending" | "approved" | "rejected";
@@ -12,6 +12,7 @@ const AdminDeposits = () => {
   const queryClient = useQueryClient();
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [filter, setFilter] = useState<Filter>("all");
+  const [search, setSearch] = useState("");
 
   const { data: allTx, isLoading } = useQuery({
     queryKey: ["admin_all_tx"],
@@ -19,7 +20,7 @@ const AdminDeposits = () => {
       const { data, error } = await supabase
         .from("transactions")
         .select(
-          "id,user_id,type,amount,status,method,sender_number,wallet_number,country,proof_url,created_at,updated_at",
+          "id,user_id,type,amount,status,method,sender_number,wallet_number,country,proof_url,reference,created_at,updated_at",
         )
         .order("created_at", { ascending: false });
       if (error) throw error;
@@ -62,10 +63,23 @@ const AdminDeposits = () => {
     .reduce((s: number, t: any) => s + Number(t.amount), 0);
   const restant = totalDeposits - totalWithdrawals;
 
-  const filtered =
+  const baseList =
     filter === "all"
       ? deposits
       : deposits.filter((t: any) => t.status === filter);
+  const q = search.trim().toLowerCase();
+  const filtered = !q
+    ? baseList
+    : baseList.filter((t: any) => {
+        const p = profileMap.get(t.user_id) as any;
+        return (
+          (p?.email || "").toLowerCase().includes(q) ||
+          (t.sender_number || "").toLowerCase().includes(q) ||
+          (t.wallet_number || "").toLowerCase().includes(q) ||
+          (t.reference || "").toLowerCase().includes(q) ||
+          String(t.amount).includes(q)
+        );
+      });
 
   const handleAction = async (id: string, status: "approved" | "rejected") => {
     setProcessingId(id);
@@ -150,6 +164,16 @@ const AdminDeposits = () => {
         ))}
       </div>
 
+      <div className="relative">
+        <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+        <input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Rechercher email, numéro, référence, montant..."
+          className="w-full bg-secondary border border-border rounded-xl pl-9 pr-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+        />
+      </div>
+
       <p className="text-muted-foreground text-xs">{filtered.length} dépôts</p>
       {filtered.map((tx: any) => {
         const profile = profileMap.get(tx.user_id);
@@ -194,8 +218,17 @@ const AdminDeposits = () => {
                   </p>
                 </div>
               </div>
+              <div className="rounded-xl bg-primary/10 border border-primary/30 p-3">
+                <p className="text-[11px] uppercase tracking-[0.2em] text-primary font-bold">
+                  📱 Numéro du déposant
+                </p>
+                <p className="font-display font-bold text-foreground text-base mt-1 select-all">
+                  {tx.sender_number || "—"}
+                </p>
+              </div>
               <p>
-                Méthode: {paymentMethod} • Expéditeur: {tx.sender_number || "—"}
+                Méthode: {paymentMethod} • Réf:{" "}
+                <span className="select-all">{tx.reference || "—"}</span>
               </p>
               <p>{new Date(tx.created_at).toLocaleString("fr-FR")}</p>
               {tx.proof_url && (

@@ -4,6 +4,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
 import { Save, Snowflake } from "lucide-react";
+import AdminSearch from "./AdminSearch";
 
 const formatCFA = (n: number) => Number(n || 0).toLocaleString("fr-FR");
 
@@ -173,6 +174,7 @@ const ProductRow = ({ row }: { row: Row }) => {
 };
 
 const AdminProducts = () => {
+  const [search, setSearch] = useState("");
   const { data, isLoading } = useQuery({
     queryKey: ["admin_investment_types"],
     queryFn: async () => {
@@ -196,13 +198,17 @@ const AdminProducts = () => {
       </div>
     );
 
+  const q = search.trim().toLowerCase();
+  const list = !q ? data || [] : (data || []).filter((r) => r.name.toLowerCase().includes(q));
+
   return (
     <div className="space-y-3">
+      <AdminSearch value={search} onChange={setSearch} placeholder="Rechercher un produit..." />
       <p className="text-muted-foreground text-xs">
-        {data?.length || 0} produits — modifie le prix et le revenu quotidien.
+        {list.length} produits — modifie le prix et le revenu quotidien.
         Le revenu total est recalculé automatiquement (revenu/jour × durée).
       </p>
-      {data?.map((row) => (
+      {list.map((row) => (
         <ProductRow key={row.id} row={row} />
       ))}
     </div>

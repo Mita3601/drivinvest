@@ -4,6 +4,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "@/hooks/use-toast";
 import { useState, useMemo } from "react";
 import { Check, X } from "lucide-react";
+import AdminSearch from "./AdminSearch";
 
 const formatCFA = (n: number) => n.toLocaleString("fr-FR");
 type Filter = "all" | "pending" | "approved" | "rejected";
@@ -12,6 +13,7 @@ const AdminWithdrawals = () => {
   const queryClient = useQueryClient();
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [filter, setFilter] = useState<Filter>("all");
+  const [search, setSearch] = useState("");
 
   const { data: withdrawals, isLoading } = useQuery({
     queryKey: ["admin_withdrawals"],
@@ -49,9 +51,21 @@ const AdminWithdrawals = () => {
     enabled: userIds.length > 0,
   });
 
-  const filtered = (withdrawals || []).filter(
+  const baseFiltered = (withdrawals || []).filter(
     (t: any) => filter === "all" || t.status === filter,
   );
+  const q = search.trim().toLowerCase();
+  const filtered = !q
+    ? baseFiltered
+    : baseFiltered.filter((t: any) => {
+        const u = usersMap?.[t.user_id];
+        return (
+          (u?.email || "").toLowerCase().includes(q) ||
+          (u?.full_name || "").toLowerCase().includes(q) ||
+          (t.wallet_number || "").toLowerCase().includes(q) ||
+          String(t.amount).includes(q)
+        );
+      });
 
   const handleAction = async (id: string, status: "approved" | "rejected") => {
     setProcessingId(id);
@@ -97,6 +111,7 @@ const AdminWithdrawals = () => {
 
   return (
     <div className="space-y-3">
+      <AdminSearch value={search} onChange={setSearch} placeholder="Rechercher nom, email, numéro, montant..." />
       <div className="flex gap-1 overflow-x-auto">
         {filters.map((f) => (
           <button

@@ -1,9 +1,10 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { toast } from "@/hooks/use-toast";
 import { Snowflake, Pencil, Star } from "lucide-react";
+import AdminSearch from "./AdminSearch";
 
 type AdminProfile = {
   id: string;
@@ -26,6 +27,7 @@ const AdminUsers = () => {
     id: string;
     balance: string;
   } | null>(null);
+  const [search, setSearch] = useState("");
 
   const {
     data: profiles,
@@ -100,12 +102,23 @@ const AdminUsers = () => {
     );
   }
 
+  const q = search.trim().toLowerCase();
+  const list = !q
+    ? profiles || []
+    : (profiles || []).filter(
+        (p: AdminProfile) =>
+          (p.full_name || "").toLowerCase().includes(q) ||
+          (p.email || "").toLowerCase().includes(q) ||
+          (p.referral_code || "").toLowerCase().includes(q),
+      );
+
   return (
     <div className="space-y-3">
+      <AdminSearch value={search} onChange={setSearch} placeholder="Rechercher nom, email, code parrain..." />
       <p className="text-muted-foreground text-xs">
-        {profiles?.length || 0} utilisateurs
+        {list.length} utilisateurs
       </p>
-      {profiles?.map((p: AdminProfile) => (
+      {list.map((p: AdminProfile) => (
         <div
           key={p.id}
           className="rounded-xl bg-secondary border border-border p-4 space-y-3"

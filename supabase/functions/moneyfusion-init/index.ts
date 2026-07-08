@@ -268,6 +268,7 @@ Deno.serve(async (req) => {
       payment_url: paymentUrl,
       provider_token: paymentToken,
       country,
+      sender_number: phone,
     } as Record<string, unknown>;
 
     const { error: insertError } = await admin

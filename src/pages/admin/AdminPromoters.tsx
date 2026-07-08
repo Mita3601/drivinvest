@@ -4,6 +4,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { Star, Gift, UserPlus } from "lucide-react";
+import AdminSearch from "./AdminSearch";
 
 const formatCFA = (n: number) => n.toLocaleString("fr-FR");
 
@@ -11,6 +12,7 @@ const AdminPromoters = () => {
   const qc = useQueryClient();
   const [grantingFor, setGrantingFor] = useState<string | null>(null);
   const [productId, setProductId] = useState<string>("");
+  const [search, setSearch] = useState("");
 
   const { data: profiles, isLoading } = useQuery({
     queryKey: ["admin_profiles_all"],
@@ -82,8 +84,13 @@ const AdminPromoters = () => {
       </div>
     );
 
-  const promoters = (profiles || []).filter((p: any) => p.is_promoter);
-  const others = (profiles || []).filter((p: any) => !p.is_promoter);
+  const q = search.trim().toLowerCase();
+  const matches = (p: any) =>
+    !q ||
+    (p.full_name || "").toLowerCase().includes(q) ||
+    (p.email || "").toLowerCase().includes(q);
+  const promoters = (profiles || []).filter((p: any) => p.is_promoter && matches(p));
+  const others = (profiles || []).filter((p: any) => !p.is_promoter && matches(p));
 
   const Card = ({ p }: { p: any }) => (
     <div className="rounded-xl bg-secondary border border-border p-4 space-y-2">
@@ -152,6 +159,7 @@ const AdminPromoters = () => {
 
   return (
     <div className="space-y-4">
+      <AdminSearch value={search} onChange={setSearch} placeholder="Rechercher nom ou email..." />
       <div>
         <p className="text-primary text-xs font-bold uppercase mb-2">
           Promoteurs actifs ({promoters.length})
