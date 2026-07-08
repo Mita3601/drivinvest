@@ -51,9 +51,21 @@ const AdminWithdrawals = () => {
     enabled: userIds.length > 0,
   });
 
-  const filtered = (withdrawals || []).filter(
+  const baseFiltered = (withdrawals || []).filter(
     (t: any) => filter === "all" || t.status === filter,
   );
+  const q = search.trim().toLowerCase();
+  const filtered = !q
+    ? baseFiltered
+    : baseFiltered.filter((t: any) => {
+        const u = usersMap?.[t.user_id];
+        return (
+          (u?.email || "").toLowerCase().includes(q) ||
+          (u?.full_name || "").toLowerCase().includes(q) ||
+          (t.wallet_number || "").toLowerCase().includes(q) ||
+          String(t.amount).includes(q)
+        );
+      });
 
   const handleAction = async (id: string, status: "approved" | "rejected") => {
     setProcessingId(id);
