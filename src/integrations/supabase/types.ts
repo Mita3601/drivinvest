@@ -122,6 +122,120 @@ export type Database = {
         }
         Relationships: []
       }
+      investment_types_backup: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          cycle_days: number | null
+          daily_return: number | null
+          duration: number | null
+          id: string | null
+          image_url: string | null
+          is_frozen: boolean | null
+          is_starter: boolean | null
+          name: string | null
+          price: number | null
+          referral_base_price: number | null
+          stock_limit: number | null
+          tag: string | null
+          total_cycles: number | null
+          total_return: number | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          cycle_days?: number | null
+          daily_return?: number | null
+          duration?: number | null
+          id?: string | null
+          image_url?: string | null
+          is_frozen?: boolean | null
+          is_starter?: boolean | null
+          name?: string | null
+          price?: number | null
+          referral_base_price?: number | null
+          stock_limit?: number | null
+          tag?: string | null
+          total_cycles?: number | null
+          total_return?: number | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          cycle_days?: number | null
+          daily_return?: number | null
+          duration?: number | null
+          id?: string | null
+          image_url?: string | null
+          is_frozen?: boolean | null
+          is_starter?: boolean | null
+          name?: string | null
+          price?: number | null
+          referral_base_price?: number | null
+          stock_limit?: number | null
+          tag?: string | null
+          total_cycles?: number | null
+          total_return?: number | null
+        }
+        Relationships: []
+      }
+      investment_types_backup_20260709: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          cycle_days: number | null
+          daily_return: number | null
+          duration: number | null
+          id: string | null
+          image_url: string | null
+          is_frozen: boolean | null
+          is_starter: boolean | null
+          name: string | null
+          price: number | null
+          referral_base_price: number | null
+          stock_limit: number | null
+          tag: string | null
+          total_cycles: number | null
+          total_return: number | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          cycle_days?: number | null
+          daily_return?: number | null
+          duration?: number | null
+          id?: string | null
+          image_url?: string | null
+          is_frozen?: boolean | null
+          is_starter?: boolean | null
+          name?: string | null
+          price?: number | null
+          referral_base_price?: number | null
+          stock_limit?: number | null
+          tag?: string | null
+          total_cycles?: number | null
+          total_return?: number | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          cycle_days?: number | null
+          daily_return?: number | null
+          duration?: number | null
+          id?: string | null
+          image_url?: string | null
+          is_frozen?: boolean | null
+          is_starter?: boolean | null
+          name?: string | null
+          price?: number | null
+          referral_base_price?: number | null
+          stock_limit?: number | null
+          tag?: string | null
+          total_cycles?: number | null
+          total_return?: number | null
+        }
+        Relationships: []
+      }
       investments: {
         Row: {
           amount_invested: number
@@ -202,6 +316,7 @@ export type Database = {
           created_at: string
           email: string | null
           full_name: string | null
+          has_purchased_category_o: boolean | null
           id: string
           is_frozen: boolean
           is_promoter: boolean
@@ -223,6 +338,7 @@ export type Database = {
           created_at?: string
           email?: string | null
           full_name?: string | null
+          has_purchased_category_o?: boolean | null
           id?: string
           is_frozen?: boolean
           is_promoter?: boolean
@@ -244,6 +360,7 @@ export type Database = {
           created_at?: string
           email?: string | null
           full_name?: string | null
+          has_purchased_category_o?: boolean | null
           id?: string
           is_frozen?: boolean
           is_promoter?: boolean
@@ -516,6 +633,7 @@ export type Database = {
         Args: { p_daily_return: number; p_id: string; p_price: number }
         Returns: Json
       }
+      apply_category_o_reward: { Args: never; Returns: number }
       apply_referral_bonus: {
         Args: { deposit_amount: number; depositor_user_id: string }
         Returns: undefined
@@ -524,7 +642,12 @@ export type Database = {
         Args: { p_base_price: number; p_user_id: string }
         Returns: undefined
       }
+      approve_deposit_transaction: { Args: { p_tx_id: string }; Returns: Json }
       buy_investment: { Args: { p_type_id: string }; Returns: Json }
+      can_purchase_product: {
+        Args: { p_type_id: string; p_user_id: string }
+        Returns: Json
+      }
       can_view_referral_investment: {
         Args: { p_user_id: string }
         Returns: boolean
@@ -547,6 +670,10 @@ export type Database = {
         Args: { p_amount: number; p_reference: string }
         Returns: Json
       }
+      create_investment_with_category_check: {
+        Args: { p_type_id: string; p_user_id: string }
+        Returns: Json
+      }
       distribute_daily_rewards: { Args: never; Returns: number }
       enable_member_actions: { Args: never; Returns: undefined }
       expire_stale_deposits: { Args: never; Returns: number }
@@ -560,6 +687,7 @@ export type Database = {
         Returns: boolean
       }
       redeem_promo_code: { Args: { p_code: string }; Returns: Json }
+      reject_deposit_transaction: { Args: { p_tx_id: string }; Returns: Json }
       request_withdrawal: {
         Args: {
           p_amount: number

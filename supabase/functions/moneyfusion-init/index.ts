@@ -155,7 +155,9 @@ Deno.serve(async (req) => {
 
     const reference = `MF-${crypto.randomUUID().replace(/-/g, "").slice(0, 16).toUpperCase()}`;
     const safeOrigin = returnOrigin.replace(/\/$/, "");
-    const redirectUrl = `${safeOrigin}/recharge/return?ref=${reference}`;
+    // HashRouter app: return to home with the deposit reference in the hash so
+    // the SPA loads correctly (no 404) and can auto-verify + credit the user.
+    const redirectUrl = `${safeOrigin}/#/?deposit_ref=${reference}`;
     const webhookUrl = new URL(
       `${SUPABASE_URL}/functions/v1/moneyfusion-webhook`,
     );

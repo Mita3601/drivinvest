@@ -69,6 +69,94 @@ const Index = () => {
     loadBonus();
   }, [profile?.id]);
 
+  // Auto-verify a MoneyFusion deposit when returning from the payment page.
+  // The return URL is `${origin}/#/?deposit_ref=REF`.
+  useEffect(() => {
+    const parseRef = () => {
+      try {
+        // Query params can live in the hash (HashRouter) or the real search.
+        const hash = window.location.hash || "";
+        const qIndex = hash.indexOf("?");
+        const hashParams = new URLSearchParams(
+          qIndex >= 0 ? hash.slice(qIndex + 1) : "",
+        );
+        const searchParams = new URLSearchParams(window.location.search);
+        return (
+          hashParams.get("deposit_ref") || searchParams.get("deposit_ref") || ""
+        );
+      } catch {
+        return "";
+      }
+    };
+    const reference = parseRef();
+    if (!reference) return;
+
+    let cancelled = false;
+    let attempts = 0;
+    let toastShown = false;
+
+    const cleanUrl = () => {
+      const clean = `${window.location.origin}${window.location.pathname}#/`;
+      window.history.replaceState({}, "", clean);
+    };
+
+    const tick = async () => {
+      if (cancelled) return;
+      attempts++;
+      try {
+        const { data: sess } = await supabase.auth.getSession();
+        const token = sess?.session?.access_token;
+        const { data } = await supabase.functions.invoke(
+          "moneyfusion-verify",
+          {
+            headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+            body: { reference },
+          },
+        );
+        const st = (data as any)?.status;
+        if (st === "approved") {
+          if (!toastShown) {
+            toastShown = true;
+            toast({
+              title: "Dépôt confirmé ✅",
+              description: "Votre solde a été crédité automatiquement.",
+            });
+          }
+          qc.invalidateQueries({ queryKey: ["profile"] });
+          cleanUrl();
+          return;
+        }
+        if (st === "rejected") {
+          toast({
+            title: "Dépôt échoué",
+            description: "Le paiement n'a pas été confirmé.",
+            variant: "destructive",
+          });
+          cleanUrl();
+          return;
+        }
+      } catch {
+        /* retry */
+      }
+      if (attempts < 15 && !cancelled) {
+        setTimeout(tick, 4000);
+      } else if (!cancelled) {
+        toast({
+          title: "Vérification en cours…",
+          description:
+            "Votre dépôt sera crédité dès la confirmation MoneyFusion.",
+        });
+        cleanUrl();
+      }
+    };
+    // Kick off quickly then poll.
+    tick();
+    return () => {
+      cancelled = true;
+    };
+  }, [qc]);
+
+
   const claimBonus = async () => {
     if (!canClaim || claiming) return;
     setClaiming(true);
